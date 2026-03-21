@@ -9,6 +9,7 @@ struct Entity
     uint32_t version;
 };
 
+
 class EntityManager
 {
 public:
