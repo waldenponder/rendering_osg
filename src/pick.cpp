@@ -363,10 +363,10 @@ public:
                 //重复计算，这里会出问题
                 // g_pickCamera->setProjectionMatrix(viewer->getCamera()->getProjectionMatrix());
                 //g_pickCamera->setProjectionMatrix(
-                //    osg::Matrix::ortho2D(0, WINDOWSIZE, 0, WINDOWSIZE));
+                 //   osg::Matrix::ortho2D(0, WINDOWSIZE, 0, WINDOWSIZE);
                 //g_pickCamera->setViewMatrix(osg::Matrix::lookAt(eye, center, up));
 
-
+                g_pickCamera->setViewport(_mx, _my, WINDOWSIZE, WINDOWSIZE);
                 break;
             }
         case (osgGA::GUIEventAdapter::MOVE):
@@ -402,13 +402,12 @@ public:
         g_pickCamera->setRenderTargetImplementation(
             osg::Camera::FRAME_BUFFER_OBJECT);
         g_pickCamera->setRenderOrder(osg::Camera::PRE_RENDER);
-        g_pickCamera->setViewport(0, 0, WINDOWSIZE, WINDOWSIZE);
+        //g_pickCamera->setViewport(0, 0, WINDOWSIZE, WINDOWSIZE);
 
         g_pickCamera->setGraphicsContext(viewer->getCamera()->getGraphicsContext());
 
         g_pickCamera->setViewMatrix(viewer->getCamera()->getViewMatrix());
-        g_pickCamera->setProjectionMatrix(
-            viewer->getCamera()->getProjectionMatrix());
+        g_pickCamera->setProjectionMatrix(viewer->getCamera()->getProjectionMatrix());
 
         g_pickCamera->addChild(viewer->getSceneData()->asGroup()->getChild(0));
         // viewer->addSlave(g_pickCamera);
