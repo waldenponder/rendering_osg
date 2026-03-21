@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <cstdint>
 #include <vector>
+
+#include "Scene.h"
 static constexpr uint32_t INVALID = 0xFFFFFFFF;
 
 struct Entity
@@ -12,6 +14,8 @@ struct Entity
 class EntityManager
 {
 public:
+    EntityManager() = default;
+
     Entity create()
     {
         uint32_t index;
@@ -26,6 +30,7 @@ public:
             index = versions.size();
             versions.push_back(0);
             nodes.emplace_back();
+            Scene::instance().ensure(index);
         }
 
         return {index, versions[index]};
@@ -120,13 +125,15 @@ public:
 
 
     template <typename Func>
-    void for_each_child_index(uint32_t idx, Func func) {
-      uint32_t child = nodes[idx].firstChild;
+    void for_each_child_index(uint32_t idx, Func func)
+    {
+        uint32_t child = nodes[idx].firstChild;
 
-      while (child != INVALID) {
-        func(child);
-        child = nodes[child].nextSibling;
-      }
+        while (child != INVALID)
+        {
+            func(child);
+            child = nodes[child].nextSibling;
+        }
     }
 
     EntityManager(const EntityManager&) = delete;

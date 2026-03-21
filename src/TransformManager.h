@@ -8,8 +8,6 @@
 class TransformManager
 {
 public:
-    static constexpr uint32_t INVALID = 0xFFFFFFFF;
-
     void init(size_t capacity)
     {
         local.resize(capacity, osg::Matrix::identity());
