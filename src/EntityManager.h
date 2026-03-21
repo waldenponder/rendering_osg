@@ -9,7 +9,6 @@ struct Entity
     uint32_t version;
 };
 
-
 class EntityManager
 {
 public:
@@ -102,6 +101,8 @@ public:
         return {p, versions[p]};
     }
 
+    uint32_t get_parent_index(uint32_t idx) const { return nodes[idx].parent; }
+
     template <typename Func>
     void for_each_child(Entity e, Func func)
     {
@@ -115,6 +116,17 @@ public:
             func(Entity{child, versions[child]});
             child = nodes[child].nextSibling;
         }
+    }
+
+
+    template <typename Func>
+    void for_each_child_index(uint32_t idx, Func func) {
+      uint32_t child = nodes[idx].firstChild;
+
+      while (child != INVALID) {
+        func(child);
+        child = nodes[child].nextSibling;
+      }
     }
 
     EntityManager(const EntityManager&) = delete;
