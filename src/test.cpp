@@ -161,12 +161,12 @@ float random_float_modern(float min, float max)
 
 void test_ecs(osg::Group* root)
 {
-    float sz = 50;
+    float sz = 500;
 
     std::vector<Entity> entities;
     auto t1 = clock();
 
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 20000; i++)
     {
         Entity e1 = entity_manager.create();
         entities.push_back(e1);
@@ -245,14 +245,14 @@ int main()
 
     std::vector<std::string> objFileNames = {
         "bunny.obj",
-        //"bunny_decimated.obj",
-        //"bunny_patched.obj", "column.obj",
-        //"cube.obj", "hollowcube.obj",
-        //"orb.obj", "platform.obj",
-        //"tree.obj", "tree1b_lod0_1.obj",
-        //"tree1b_lod0_2.obj", "tree1b_lod1_1.obj",
-        //"tree1b_lod1_2.obj", "tree1b_lod2_1.obj",
-        //"tree1b_lod2_2.obj"
+        "bunny_decimated.obj",
+        "bunny_patched.obj", "column.obj",
+        "cube.obj", "hollowcube.obj",
+        "orb.obj", "platform.obj",
+        "tree.obj", "tree1b_lod0_1.obj",
+        "tree1b_lod0_2.obj", "tree1b_lod1_1.obj",
+        "tree1b_lod1_2.obj", "tree1b_lod2_1.obj",
+        "tree1b_lod2_2.obj"
     };
 
     for (auto& s : objFileNames)
