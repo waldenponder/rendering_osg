@@ -50,20 +50,41 @@ MeshData get_mesh_func(Entity e)
     auto m = ps->getMode();
 
     MeshData mesh;
-    mesh.vert_ = dynamic_cast<osg::Vec3Array*>(geom->getVertexArray());
-    mesh.color_ = dynamic_cast<osg::Vec4Array*>(geom->getColorArray());
 
-    mesh.normal_ = dynamic_cast<osg::Vec3Array *>(geom->getNormalArray());
+    mesh.vert_ = new osg::Vec3Array;
+    auto *src = dynamic_cast<osg::Vec3Array *>(geom->getVertexArray());
+    for (auto& v : *src)
+    {
+        mesh.vert_->push_back(v);
+    }
+
+    mesh.color_ = new osg::Vec4Array;
+    auto* src2 = dynamic_cast<osg::Vec4Array*>(geom->getColorArray());
+    if (src2)
+    {
+      for (auto &v : *src2) {
+        mesh.color_->push_back(v);
+      }
+    }
+
+
+    mesh.normal_ = new osg::Vec3Array;
+    auto* src3 = dynamic_cast<osg::Vec3Array*>(geom->getNormalArray());
+    for (auto& v : *src3)
+    {
+        mesh.normal_->push_back(v);
+    }
+
     mesh.indices_ = new osg::DrawElementsUInt(m);
     //mesh.indices_->setMode(m);
 
     if (mesh.color_ == nullptr)
     {
-   //   std::cout << "null color \n";
+        //   std::cout << "null color \n";
     }
-  //  std::cout << " color sz:  " << mesh.normal_->size() << "\n";
+    //  std::cout << " color sz:  " << mesh.normal_->size() << "\n";
     int cnt = ps->getNumIndices();
-                       
+
     for (int i = 0; i < cnt; i++)
     {
         int idx = ps->getElement(i);

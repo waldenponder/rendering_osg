@@ -161,7 +161,7 @@ float random_float_modern(float min, float max)
 
 void test_ecs(osg::Group* root)
 {
-    float sz = 500;
+    float sz = 50;
 
     std::vector<Entity> entities;
     auto t1 = clock();
@@ -171,8 +171,8 @@ void test_ecs(osg::Group* root)
         Entity e1 = entity_manager.create();
         entities.push_back(e1);
 
-        MeshData data1 = get_mesh_func(e1);
-        mesh_manager.set_mesh(e1, data1);
+        //MeshData data1 = get_mesh_func(e1);
+        //mesh_manager.set_mesh(e1, data1);
 
         float r1 = random_float_modern(-sz, sz);
         float r2 = random_float_modern(-sz, sz);
@@ -201,8 +201,8 @@ void test_ecs(osg::Group* root)
       auto aa = clock();
 
       for (auto e : entities) {
-     /*   MeshData data1 = get_mesh_func(e);
-        mesh_manager.set_mesh(e, data1);*/
+        MeshData data1 = get_mesh_func(e);
+        mesh_manager.set_mesh(e, data1);
       }
       auto bb = clock();
       cout << "get-mesh: " << (bb - aa) << "\n";

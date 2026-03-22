@@ -33,13 +33,13 @@ void BatchSystem::applyMatrix(const std::vector<Entity>& entities)
        // osg::ref_ptr<osg::Vec3Array> vv = new osg::Vec3Array;
         for (auto& v : data.vert_->asVector())
         {
-           // v = v * mat;
+            v = v * mat;
             //vv->push_back(tmp);
-             v = v + pos;
+             //v = v + pos;
         }
         //data.vert_ = vv;
     }
-}
+ }
 
 std::vector<MeshData> BatchSystem::merge(const std::vector<Batch>& batchs)
 {
@@ -142,7 +142,7 @@ std::vector<MeshData> BatchSystem::merge(const std::vector<Batch>& batchs)
         }
 
         if (data.isValid())
-            res.push_back(std::move(data));
+            res.push_back(data);
     }
 
     return res;
