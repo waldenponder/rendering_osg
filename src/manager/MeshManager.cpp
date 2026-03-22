@@ -32,7 +32,7 @@ osg::ref_ptr<osg::Geometry> createGeometry(MeshData& data)
     else
     {
         // fallback: ·ÇË÷Òý»æÖÆ
-        geom->addPrimitiveSet(new osg::DrawArrays(data.mode_, 0, vert_->size()));
+        //geom->addPrimitiveSet(new osg::DrawArrays(data.mode_, 0, vert_->size()));
     }
 
     return geom;
@@ -52,11 +52,13 @@ MeshData get_mesh_func(Entity e)
     MeshData mesh;
     mesh.vert_ = dynamic_cast<osg::Vec3Array*>(geom->getVertexArray());
     mesh.color_ = dynamic_cast<osg::Vec4Array*>(geom->getColorArray());
+    mesh.normal_ = dynamic_cast<osg::Vec3Array *>(geom->getNormalArray());
     mesh.indices_ = new osg::DrawElementsUInt(m);
     //mesh.indices_->setMode(m);
 
+  //  std::cout << " color sz:  " << mesh.normal_->size() << "\n";
     int cnt = ps->getNumIndices();
-
+                       
     for (int i = 0; i < cnt; i++)
     {
         int idx = ps->getElement(i);

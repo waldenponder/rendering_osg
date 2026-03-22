@@ -7,7 +7,7 @@
 #include <osg/Vec4>
 #include <osg/Vec2>
 
-#include "CollectDrawableVisitor.h"
+#include "../CollectDrawableVisitor.h"
 #include "EntityManager.h"
 
 struct MeshData

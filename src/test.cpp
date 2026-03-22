@@ -9,8 +9,8 @@
 #include <osg/io_utils>
 #include <random>
 
-#include "MeshManager.h"
-#include "TransformManager.h"
+#include "manager/TransformManager.h"
+#include "manager/MeshManager.h"
 
 #define WINDOWSIZE 8
 
@@ -159,9 +159,9 @@ float random_float_modern(float min, float max)
 }
 
 void test_ecs(osg::Group* root)
-{
+{ 
      float sz = 500;
-    for (int i = 0; i < 40000; i++)
+    for (int i = 0; i < 20000; i++)
     {
         Entity e1 = entity_manager.create();
 
@@ -219,6 +219,8 @@ int main()
     view.addEventHandler(new osgViewer::StatsHandler);
     view.setSceneData(root);
     view.setUpViewInWindow(100, 100, 1280, 800);
+    auto* camera = view.getCamera();
+    camera->setSmallFeatureCullingPixelSize(2.0f); //小对象剔除
 
     add_event_handler(view);
     // view.addEventHandler(new PickHandler);

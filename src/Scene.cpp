@@ -3,10 +3,11 @@
 
 #include "pch.h"
 
-#include "EntityManager.h"
-#include "MeshManager.h"
-#include "RenderInfoManager.h"
-#include "TransformManager.h"
+
+#include "manager/EntityManager.h"
+#include "manager/MeshManager.h"
+#include "manager/RenderInfoManager.h"
+#include "manager/TransformManager.h"
 
 EntityManager entity_manager;
 TransformManager transform_manager;

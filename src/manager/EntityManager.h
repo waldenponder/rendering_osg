@@ -3,7 +3,8 @@
 #include <iostream>
 #include <vector>
 
-#include "Scene.h"
+#include "../Scene.h"
+
 static constexpr uint32_t INVALID = 0xFFFFFFFF;
 
 struct Entity
