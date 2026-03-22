@@ -197,11 +197,11 @@ private:
             local.localVisible && (parentWorld ? parentWorld->visible : 1);
 
         // 其他属性：若局部显式设置则用局部值，否则继承父节点（或默认值）
-#define INHERIT_OR_DEFAULT(f, field, default_val)                                 \
-  if (mask[idx] & MASK_##field)                                               \
-    world.f = local.f;                                                 \
+#define INHERIT_OR_DEFAULT(f, field, default_val)                              \
+  if (mask[idx] & MASK_##field)                                                \
+    world.f = local.f;                                                         \
   else if (parentWorld)                                                        \
-    world.f = parentWorld->f;                                          \
+    world.f = parentWorld->f;                                                  \
   else                                                                         \
     world.f = default_val
 

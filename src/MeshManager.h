@@ -1,57 +1,84 @@
 ﻿#pragma once
 
 #include <vector>
+#include <osg/Array>
+#include <osg/Geometry>
 #include <osg/Vec3>
 #include <osg/Vec4>
 #include <osg/Vec2>
 
+#include "CollectDrawableVisitor.h"
 #include "EntityManager.h"
 
-// 网格数据组件，包含渲染所需的几何数据
 struct MeshData
 {
-    // 索引缓冲（三角形索引，可选）
-    std::vector<uint32_t> indices;
+    osg::ref_ptr<osg::Vec3Array> vert_;
+    osg::ref_ptr<osg::Vec3Array> normal_;
+    osg::ref_ptr<osg::Vec4Array> color_;
+    osg::ref_ptr<osg::DrawElementsUInt> indices_;
 
-    // 顶点属性
-    std::vector<osg::Vec3> positions;
-    std::vector<osg::Vec3> normals;       // 可能为空
-    std::vector<osg::Vec4> colors;        // 可能为空
-    std::vector<osg::Vec2> texCoords;     // 可能为空
+    osg::PrimitiveSet::Mode mode_ = osg::PrimitiveSet::TRIANGLES;
 
-    // 辅助信息
-    bool hasNormals() const { return !normals.empty(); }
-    bool hasColors() const { return !colors.empty(); }
-    bool hasTexCoords() const { return !texCoords.empty(); }
-    size_t vertexCount() const { return positions.size(); }
-    size_t indexCount() const { return indices.size(); }
+    bool dirty_ = true;
 
-    // 清空数据
-    void clear() {
-        indices.clear();
-        positions.clear();
-        normals.clear();
-        colors.clear();
-        texCoords.clear();
+    bool isValid() const { return vert_ && !vert_->empty(); }
+
+    void clear()
+    {
+        if (vert_)
+            vert_->clear();
+        if (normal_)
+            normal_->clear();
+        if (color_)
+            color_->clear();
+        if (indices_)
+            indices_->clear();
+        dirty_ = true;
     }
 
-    // 检查是否有有效数据
-    bool isValid() const {
-        return !positions.empty() && (indices.empty() || indices.size() % 3 == 0);
+    void ensure()
+    {
+        if (!vert_)
+            vert_ = new osg::Vec3Array;
+        if (!normal_)
+            normal_ = new osg::Vec3Array;
+        if (!color_)
+            color_ = new osg::Vec4Array;
+        if (!indices_)
+            indices_ = new osg::DrawElementsUInt(mode_);
+    }
+
+    void addVertex(const osg::Vec3& v,
+                   const osg::Vec4& c = osg::Vec4(1, 1, 1, 1))
+    {
+        ensure();
+        vert_->push_back(v);
+        color_->push_back(c);
+        dirty_ = true;
+    }
+
+    void addTriangle(uint32_t i0, uint32_t i1, uint32_t i2)
+    {
+        ensure();
+        if (!indices_)
+            indices_ = new osg::DrawElementsUInt(mode_);
+        indices_->push_back(i0);
+        indices_->push_back(i1);
+        indices_->push_back(i2);
+        dirty_ = true;
     }
 };
+
 
 class MeshManager
 {
 public:
-    // 初始化容量
     void init(size_t capacity)
     {
         meshes.resize(capacity);
         dirty.resize(capacity, true);
     }
 
-    // 确保索引位置可用
     void ensure(size_t index)
     {
         if (index >= meshes.size())
@@ -62,17 +89,6 @@ public:
         }
     }
 
-    // 为实体设置网格数据（移动版本）
-    void set_mesh(Entity e, MeshData data)
-    {
-        uint32_t idx = e.index;
-        ensure(idx);
-        meshes[idx] = std::move(data);
-        dirty[idx] = true;
-        // 可在此触发 GPU 更新标记
-    }
-
-    // 为实体设置网格数据（拷贝版本）
     void set_mesh(Entity e, const MeshData& data)
     {
         uint32_t idx = e.index;
@@ -81,7 +97,6 @@ public:
         dirty[idx] = true;
     }
 
-    // 获取实体的网格数据（只读）
     const MeshData& get_mesh(Entity e) const
     {
         static const MeshData emptyMesh;
@@ -90,7 +105,6 @@ public:
         return meshes[e.index];
     }
 
-    // 获取实体的网格数据（可写）
     MeshData& get_mesh_mutable(Entity e)
     {
         ensure(e.index);
@@ -104,7 +118,6 @@ public:
         return e.index < meshes.size() && meshes[e.index].isValid();
     }
 
-    // 清除实体的网格数据
     void clear_mesh(Entity e)
     {
         if (e.index < meshes.size())
@@ -114,14 +127,12 @@ public:
         }
     }
 
-    // 标记某个实体的网格数据为脏（例如顶点数据修改后）
     void mark_dirty(Entity e)
     {
         if (e.index < meshes.size())
             dirty[e.index] = true;
     }
 
-    // 批量更新所有脏数据（如上传到 GPU）
     void update_all()
     {
         // 实际场景中，这里会遍历脏标记，将网格数据上传到 GPU 缓冲区
@@ -137,6 +148,11 @@ public:
     }
 
 private:
-    std::vector<MeshData> meshes;   // 每个实体对应的网格数据
-    std::vector<bool> dirty;        // 标记网格是否需要更新到 GPU
+    std::vector<MeshData> meshes; // 每个实体对应的网格数据
+    std::vector<bool> dirty; // 标记网格是否需要更新到 GPU
 };
+
+osg::ref_ptr<osg::Geometry> createGeometry(MeshData& data);
+
+extern CollectDrawableVisitor cv_;
+MeshData get_mesh_func(Entity e);

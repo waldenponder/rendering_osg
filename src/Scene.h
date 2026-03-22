@@ -10,7 +10,6 @@ extern TransformManager transform_manager;
 extern RenderInfoManager render_info_manager;
 extern MeshManager mesh_manager;
 
-
 class Scene {
 public:
   Scene();

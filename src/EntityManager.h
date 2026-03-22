@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <cstdint>
+#include <iostream>
 #include <vector>
 
 #include "Scene.h"
@@ -180,11 +181,12 @@ private:
     }
 
     bool is_ancestor(uint32_t child, uint32_t parent)
-    {
+    { 
         uint32_t p = nodes[child].parent;
-
+     // int cnt = 0;
         while (p != INVALID)
         {
+       // std::cout << p << "   cnt: " << cnt++ << std::endl;
             if (p == parent)
                 return true;
             p = nodes[p].parent;

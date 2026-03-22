@@ -29,8 +29,10 @@ inline void add_event_handler(osgViewer::Viewer&   viewer)
 	// add the screen capture handler
 	viewer.addEventHandler(new osgViewer::ScreenCaptureHandler);
 
-
+	//	viewer.addEventHandler(new osgGA::TrackballManipulator);
 	// set up the camera manipulators.
+
+	
 	{
 		osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
 
