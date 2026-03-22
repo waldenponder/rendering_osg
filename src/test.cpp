@@ -9,6 +9,7 @@
 #include <osg/io_utils>
 #include <random>
 
+#include "BatchSystem.h"
 #include "manager/TransformManager.h"
 #include "manager/MeshManager.h"
 
@@ -159,11 +160,16 @@ float random_float_modern(float min, float max)
 }
 
 void test_ecs(osg::Group* root)
-{ 
-     float sz = 500;
-    for (int i = 0; i < 20000; i++)
+{
+    float sz = 500;
+
+    std::vector<Entity> entities;
+    auto t1 = clock();
+
+    for (int i = 0; i < 20; i++)
     {
         Entity e1 = entity_manager.create();
+        entities.push_back(e1);
 
         MeshData data1 = get_mesh_func(e1);
         mesh_manager.set_mesh(e1, data1);
@@ -173,18 +179,61 @@ void test_ecs(osg::Group* root)
 
         auto mt1 = osg::Matrix::translate(osg::Vec3f(r1, r2, 0));
         transform_manager.set_local(e1, mt1);
-
-        osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-        osg::ref_ptr<osg::Geometry> geometry = createGeometry(data1);
-
-        osg::MatrixTransform *mt = new osg::MatrixTransform;
-        auto mat = transform_manager.get_world(e1);
-        mt->setMatrix(mat);
-
-        geode->addDrawable(geometry);
-        mt->addChild(geode);
-        root->addChild(mt);
+#if 0
+            osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+            osg::ref_ptr<osg::Geometry> geometry = createGeometry(data1);
+      
+            osg::MatrixTransform *mt = new osg::MatrixTransform;
+            auto mat = transform_manager.get_world(e1);
+            mt->setMatrix(mat);
+      
+            geode->addDrawable(geometry);
+            mt->addChild(geode);
+            root->addChild(mt);
+#endif
     }
+
+
+    auto t2 = clock();
+    cout << "aaaa: " << (t2 - t1) << "\n";
+
+    {
+      auto aa = clock();
+
+      for (auto e : entities) {
+     /*   MeshData data1 = get_mesh_func(e);
+        mesh_manager.set_mesh(e, data1);*/
+      }
+      auto bb = clock();
+      cout << "get-mesh: " << (bb - aa) << "\n";
+    }
+
+      t2 = clock();
+    std::vector<Batch> batchs = BatchSystem::computeBatch(entities);
+
+    auto t3 = clock();
+    cout << "bbb: " << (t3 - t2) << "\n";
+
+    BatchSystem::applyMatrix(entities);
+
+    auto t4 = clock();
+    cout << "ccc: " << (t4 - t3) << "\n";
+
+    std::vector<MeshData> datas = BatchSystem::merge(batchs);
+
+    auto t5 = clock();
+    cout << "ddd: " << (t5 - t4) << "\n";
+
+  
+    for (auto& data : datas)
+    {
+        osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+        osg::ref_ptr<osg::Geometry> geometry = createGeometry(data);
+        geode->addDrawable(geometry);
+        root->addChild(geode);
+    }
+    auto t6 = clock();
+    cout << "eee: " << (t6 - t5) << "\n";
 }
 
 int main()
@@ -195,14 +244,15 @@ int main()
     //root->addChild(objNode);
 
     std::vector<std::string> objFileNames = {
-        "bunny.obj", "bunny_decimated.obj",
-               "bunny_patched.obj", "column.obj",
-               "cube.obj", "hollowcube.obj",
-               "orb.obj", "platform.obj",
-               "tree.obj", "tree1b_lod0_1.obj",
-               "tree1b_lod0_2.obj", "tree1b_lod1_1.obj",
-               "tree1b_lod1_2.obj", "tree1b_lod2_1.obj",
-               "tree1b_lod2_2.obj"
+        "bunny.obj",
+        //"bunny_decimated.obj",
+        //"bunny_patched.obj", "column.obj",
+        //"cube.obj", "hollowcube.obj",
+        //"orb.obj", "platform.obj",
+        //"tree.obj", "tree1b_lod0_1.obj",
+        //"tree1b_lod0_2.obj", "tree1b_lod1_1.obj",
+        //"tree1b_lod1_2.obj", "tree1b_lod2_1.obj",
+        //"tree1b_lod2_2.obj"
     };
 
     for (auto& s : objFileNames)

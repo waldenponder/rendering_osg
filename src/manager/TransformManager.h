@@ -36,6 +36,11 @@ public:
         mark_dirty_recursive(idx);
     }
 
+    const osg::Matrix &get_local(Entity e) {
+      uint32_t idx = e.index;
+      return local[idx];
+    }
+
     const osg::Matrix& get_world(Entity e)
     {
         uint32_t idx = e.index;

@@ -52,10 +52,15 @@ MeshData get_mesh_func(Entity e)
     MeshData mesh;
     mesh.vert_ = dynamic_cast<osg::Vec3Array*>(geom->getVertexArray());
     mesh.color_ = dynamic_cast<osg::Vec4Array*>(geom->getColorArray());
+
     mesh.normal_ = dynamic_cast<osg::Vec3Array *>(geom->getNormalArray());
     mesh.indices_ = new osg::DrawElementsUInt(m);
     //mesh.indices_->setMode(m);
 
+    if (mesh.color_ == nullptr)
+    {
+   //   std::cout << "null color \n";
+    }
   //  std::cout << " color sz:  " << mesh.normal_->size() << "\n";
     int cnt = ps->getNumIndices();
                        
