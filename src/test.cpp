@@ -236,8 +236,9 @@ void test_ecs(osg::Group* root)
     cout << "eee: " << (t6 - t5) << "\n";
 }
 
-int main()
-{
+osg::Node * create_instance();
+
+int main() {
     osgViewer::Viewer view;
     osg::Group* root = new osg::Group;
     // osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(shader_dir() + "/model/" + "orb.obj");
@@ -255,16 +256,18 @@ int main()
         "tree1b_lod2_2.obj"
     };
 
-    for (auto& s : objFileNames)
-    {
-        std::string path = shader_dir() + "/model/" + s;
-        osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(path);
-        if (objNode)
-            objNode->accept(cv_);
-    }
+    //for (auto& s : objFileNames)
+    //{
+    //    std::string path = shader_dir() + "/model/" + s;
+    //    osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(path);
+    //    if (objNode)
+    //        objNode->accept(cv_);
+    //}
 
-    test_ecs(root);
+//    test_ecs(root);
 
+    auto tt = create_instance();
+    root->addChild(tt);
     //root->addChild(create_lines(view));
     view.addEventHandler(new osgViewer::StatsHandler);
     view.setSceneData(root);
