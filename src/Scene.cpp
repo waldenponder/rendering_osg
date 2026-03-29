@@ -44,4 +44,5 @@ void Scene::ensure(size_t index)
 void Scene::dirty(Entity e)
 {
     transform_manager.mark_dirty(e);
+    render_info_manager.mark_dirty(e);
 }

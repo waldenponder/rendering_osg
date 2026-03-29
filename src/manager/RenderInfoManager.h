@@ -34,14 +34,14 @@ struct RenderInfo
 
     uint32_t visible : 1; // 最终可见性（路径全可见）
     uint32_t localVisible : 1; // 局部可见性（用户设置）
-    int layer : 8;
-    int category : 8;
-    int transparency : 1;
-    int lineWidth : 3;
-    int polygonOffsetFactor : 3;
-    int polygonOffsetUnit : 3;
+    uint32_t layer : 8;
+    uint32_t category : 8;
+    uint32_t transparency : 1;
+    uint32_t lineWidth : 3;
+    uint32_t polygonOffsetFactor : 3;
+    uint32_t polygonOffsetUnit : 3;
     uint32_t highlight : 1;
-    int padding : 3;
+    uint32_t padding : 3;
 };
 
 class RenderInfoManager
@@ -52,6 +52,7 @@ public:
         localInfo.reserve(capacity);
         worldInfo.reserve(capacity);
         dirty.reserve(capacity);
+        mask.reserve(capacity);
     }
 
     void ensure(size_t index)
@@ -63,7 +64,7 @@ public:
             localInfo.resize(newSize);
             worldInfo.resize(newSize);
             dirty.resize(newSize, true);
-            // 新元素已通过 RenderInfo 默认构造函数初始化（localVisible=1，其他=0）
+            mask.resize(newSize, 0);
         }
     }
 
@@ -73,7 +74,7 @@ public:
         ensure(idx);
         localInfo[idx].localVisible = visible ? 1 : 0;
         mask[idx] |= MASK_LOCAL_VISIBLE;
-        // mark_dirty_recursive(idx);
+        mark_dirty_recursive(idx);
     }
 
     void set_local_layer(Entity e, int layer)
@@ -82,7 +83,7 @@ public:
         ensure(idx);
         localInfo[idx].layer = layer;
         mask[idx] |= MASK_LAYER;
-        //  mark_dirty_recursive(idx);
+        mark_dirty_recursive(idx);
     }
 
     void set_local_category(Entity e, int category)
@@ -91,7 +92,7 @@ public:
         ensure(idx);
         localInfo[idx].category = category;
         mask[idx] |= MASK_CATEGORY;
-        // mark_dirty_recursive(idx);
+        mark_dirty_recursive(idx);
     }
 
     void set_local_transparency(Entity e, bool transparency)
@@ -100,7 +101,7 @@ public:
         ensure(idx);
         localInfo[idx].transparency = transparency ? 1 : 0;
         mask[idx] |= MASK_TRANSPARENCY;
-        //mark_dirty_recursive(idx);
+        mark_dirty_recursive(idx);
     }
 
     void set_local_lineWidth(Entity e, int width)
@@ -109,7 +110,7 @@ public:
         ensure(idx);
         localInfo[idx].lineWidth = width;
         mask[idx] |= MASK_LINE_WIDTH;
-        //mark_dirty_recursive(idx);
+        mark_dirty_recursive(idx);
     }
 
     void set_local_polygonOffsetFactor(Entity e, int factor)
@@ -118,7 +119,7 @@ public:
         ensure(idx);
         localInfo[idx].polygonOffsetFactor = factor;
         mask[idx] |= MASK_POLYGON_OFFSET_FACTOR;
-        //mark_dirty_recursive(idx);
+        mark_dirty_recursive(idx);
     }
 
     void set_local_polygonOffsetUnit(Entity e, int unit)
@@ -127,7 +128,7 @@ public:
         ensure(idx);
         localInfo[idx].polygonOffsetUnit = unit;
         mask[idx] |= MASK_POLYGON_OFFSET_UNIT;
-        //mark_dirty_recursive(idx);
+        mark_dirty_recursive(idx);
     }
 
     void set_local_highlight(Entity e, bool highlight)
@@ -136,7 +137,7 @@ public:
         ensure(idx);
         localInfo[idx].highlight = highlight ? 1 : 0;
         mask[idx] |= MASK_HIGHLIGHT;
-        // mark_dirty_recursive(idx);
+        mark_dirty_recursive(idx);
     }
 
     // ---------- 获取世界属性 ----------
@@ -173,14 +174,17 @@ public:
         }
     }
 
+    void mark_dirty(Entity e)
+    {
+        mark_dirty_recursive(e.index);
+    }
+
 private:
-    // 计算世界属性（先确保父节点最新，再合并）
     void update_world(uint32_t idx)
     {
         if (!dirty[idx])
             return;
 
-        // 确保父节点是最新的
         uint32_t parent = (em ? em->get_parent_index(idx) : INVALID_ID);
         if (parent != INVALID_ID)
         {
@@ -219,7 +223,7 @@ private:
 
     std::vector<RenderInfo> localInfo;
     std::vector<RenderInfo> worldInfo;
-    std::vector<uint32_t> mask; // 标记哪些属性在局部被显式设置
+    std::vector<uint32_t> mask; 
     std::vector<bool> dirty;
     EntityManager* em = nullptr;
 };

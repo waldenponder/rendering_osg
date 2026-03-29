@@ -172,9 +172,133 @@ void test_dirty_propagation()
     std::cout << "PASS\n";
 }
 
+//----------------------------------------------------render info test
+void test_visibility_propagation()
+{
+    std::cout << "==== test_visibility_propagation ====\n";
+
+    Entity root = entity_manager.create();
+    Entity child = entity_manager.create();
+
+    entity_manager.set_parent(child, root);
+
+    // root 不可见
+    render_info_manager.set_local_visible(root, false);
+
+    auto w = render_info_manager.get_world(child);
+
+    std::cout << "child.visible = " << w.visible << std::endl;
+
+    assert(w.visible == 0);
+    render_info_manager.set_local_visible(root, true);
+
+    auto w2 = render_info_manager.get_world(child);
+
+    std::cout << "child.visible = " << w2.visible << std::endl;
+
+    assert(w2.visible == 1);
+
+
+    render_info_manager.set_local_visible(root, false);
+    auto w3_ = render_info_manager.get_world(child);
+
+    std::cout << "child.visible = " << w3_.visible << std::endl;
+
+    assert(w3_.visible == 0);
+
+    entity_manager.set_parent(child, {INVALID_ID, 0});
+
+    auto w3 = render_info_manager.get_world(child);
+
+    std::cout << "child.visible = " << w3.visible << std::endl;
+
+    assert(w3.visible == 1);
+
+    std::cout << "PASS\n";
+}
+
+void test_render_info_dirty_propagation()
+{
+    std::cout << "==== test_dirty_propagation ====\n";
+
+    Entity root = entity_manager.create();
+    Entity child = entity_manager.create();
+
+    entity_manager.set_parent(child, root);
+
+    render_info_manager.set_local_layer(root, 1);
+
+    auto before = render_info_manager.get_world(child);
+    assert(before.layer == 1);
+
+    // 修改父节点
+    render_info_manager.set_local_layer(root, 9);
+
+    auto after = render_info_manager.get_world(child);
+
+    std::cout << "before: " << before.layer << "\n";
+    std::cout << "after: " << after.layer << "\n";
+
+    assert(after.layer == 9);
+
+    std::cout << "PASS\n";
+}
+
+void test_deep_hierarchy()
+{
+    std::cout << "==== test_deep_hierarchy ====\n";
+
+    Entity a = entity_manager.create();
+    Entity b = entity_manager.create();
+    Entity c = entity_manager.create();
+
+    entity_manager.set_parent(b, a);
+    entity_manager.set_parent(c, b);
+
+    render_info_manager.set_local_category(a, 2);
+
+    auto w = render_info_manager.get_world(c);
+
+    std::cout << "c.category = " << w.category << std::endl;
+
+    assert(w.category == 2);
+
+    std::cout << "PASS\n";
+}
+
+void test_mask_behavior()
+{
+    std::cout << "==== test_mask_behavior ====\n";
+
+    Entity root = entity_manager.create();
+    Entity child = entity_manager.create();
+
+    entity_manager.set_parent(child, root);
+
+    render_info_manager.set_local_lineWidth(root, 2);
+
+    // child 没设置 → 应继承
+    auto w1 = render_info_manager.get_world(child);
+    assert(w1.lineWidth == 2);
+
+    // child 设置 → 覆盖
+    render_info_manager.set_local_lineWidth(child, 5);
+
+    auto w2 = render_info_manager.get_world(child);
+    assert(w2.lineWidth == 5);
+
+    std::cout << "PASS\n";
+}
+
 void test_ecs2()
 {
     test_transform_basic();
     test_dirty_propagation();
-    //test_transform();
+
+    test_visibility_propagation();
+    test_render_info_dirty_propagation();
+    test_deep_hierarchy();
+    test_mask_behavior();
+
+    std::cout << "aaaa ";
 }
