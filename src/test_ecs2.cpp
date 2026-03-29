@@ -78,92 +78,103 @@ void test_transform3()
     Entity c3 = entity_manager.create();
     Entity c4 = entity_manager.create();
 
-     entity_manager.set_parent(c2, c1);
+    entity_manager.set_parent(c2, c1);
     entity_manager.set_parent(c3, c2);
-     entity_manager.set_parent(c4, c1);
-
+    entity_manager.set_parent(c4, c1);
 }
 
 extern EntityManager entity_manager;
 extern TransformManager transform_manager;
 
-osg::Vec3 get_translation(const osg::Matrix &m) { return m.getTrans(); }
+osg::Vec3 get_translation(const osg::Matrix& m) { return m.getTrans(); }
 
-void test_transform_basic() {
-  std::cout << "==== test_transform_basic ====" << std::endl;
+void test_transform_basic()
+{
+    std::cout << "==== test_transform_basic ====" << std::endl;
 
-  entity_manager.init(10);
-  transform_manager.set_entity_manager(&entity_manager);
-  transform_manager.init(10);
+    entity_manager.init(10);
+    transform_manager.set_entity_manager(&entity_manager);
+    transform_manager.init(10);
 
-  // 创建3个entity
-  Entity root = entity_manager.create();
-  Entity child = entity_manager.create();
-  Entity grandchild = entity_manager.create();
+    // 创建3个entity
+    Entity root = entity_manager.create();
+    Entity child = entity_manager.create();
+    Entity grandchild = entity_manager.create();
 
-  // 建立层级关系
-  entity_manager.set_parent(child, root);
-  entity_manager.set_parent(grandchild, child);
+    // 建立层级关系
+    entity_manager.set_parent(child, root);
+    entity_manager.set_parent(grandchild, child);
 
-  // 设置 local transform
-  transform_manager.set_local(root, osg::Matrix::translate(10, 0, 0));
-  transform_manager.set_local(child, osg::Matrix::translate(0, 5, 0));
-  transform_manager.set_local(grandchild, osg::Matrix::translate(0, 0, 2));
+    // 设置 local transform
+    transform_manager.set_local(root, osg::Matrix::translate(10, 0, 0));
+    transform_manager.set_local(child, osg::Matrix::translate(0, 5, 0));
+    transform_manager.set_local(grandchild, osg::Matrix::translate(0, 0, 2));
 
-  // 获取 world
-  osg::Vec3 r = get_translation(transform_manager.get_world(root));
-  osg::Vec3 c = get_translation(transform_manager.get_world(child));
-  osg::Vec3 g = get_translation(transform_manager.get_world(grandchild));
+    // 获取 world
+    osg::Vec3 r = get_translation(transform_manager.get_world(root));
+    osg::Vec3 c = get_translation(transform_manager.get_world(child));
+    osg::Vec3 g = get_translation(transform_manager.get_world(grandchild));
 
-  std::cout << "root: " << r.x() << "," << r.y() << "," << r.z() << std::endl;
-  std::cout << "child: " << c.x() << "," << c.y() << "," << c.z() << std::endl;
-  std::cout << "grandchild: " << g.x() << "," << g.y() << "," << g.z()
-            << std::endl;
+    std::cout << "root: " << r.x() << "," << r.y() << "," << r.z() << std::endl;
+    std::cout << "child: " << c.x() << "," << c.y() << "," << c.z() << std::endl;
+    std::cout << "grandchild: " << g.x() << "," << g.y() << "," << g.z()
+        << std::endl;
 
-  // 断言
-  assert(r == osg::Vec3(10, 0, 0));
-  assert(c == osg::Vec3(10, 5, 0));
-  assert(g == osg::Vec3(10, 5, 2));
+    // 断言
+    assert(r == osg::Vec3(10, 0, 0));
+    assert(c == osg::Vec3(10, 5, 0));
+    assert(g == osg::Vec3(10, 5, 2));
 
-  std::cout << "PASS\n";
+    std::cout << "PASS\n";
 }
 
-void test_dirty_propagation() {
-  std::cout << "==== test_dirty_propagation ====" << std::endl;
+void test_dirty_propagation()
+{
+    std::cout << "==== test_dirty_propagation ====" << std::endl;
 
-  Entity root = entity_manager.create();
-  Entity child = entity_manager.create();
+    Entity root = entity_manager.create();
+    Entity root2 = entity_manager.create();
+    Entity child = entity_manager.create();
 
-  entity_manager.set_parent(child, root);
+    entity_manager.set_parent(child, root);
 
-  transform_manager.set_local(root, osg::Matrix::translate(1, 0, 0));
-  transform_manager.set_local(child, osg::Matrix::translate(0, 1, 0));
+    transform_manager.set_local(root, osg::Matrix::translate(1, 0, 0));
+    transform_manager.set_local(child, osg::Matrix::translate(0, 1, 0));
 
-  // 先更新一次
-  transform_manager.update_all();
+    // 先更新一次
+    transform_manager.update_all();
 
-  osg::Vec3 before = get_translation(transform_manager.get_world(child));
-  assert(before == osg::Vec3(1, 1, 0));
+    osg::Vec3 before = get_translation(transform_manager.get_world(child));
+    assert(before == osg::Vec3(1, 1, 0));
 
-  // 修改父节点
-  transform_manager.set_local(root, osg::Matrix::translate(5, 0, 0));
+    // 修改父节点
+    transform_manager.set_local(root, osg::Matrix::translate(5, 0, 0));
 
-  osg::Vec3 after = get_translation(transform_manager.get_world(child));
+    osg::Vec3 after = get_translation(transform_manager.get_world(child));
 
-  std::cout << "before: " << before.x() << "," << before.y() << ","
-            << before.z() << std::endl;
-  std::cout << "after: " << after.x() << "," << after.y() << "," << after.z()
-            << std::endl;
+    std::cout << "before: " << before.x() << "," << before.y() << ","
+        << before.z() << std::endl;
+    std::cout << "after: " << after.x() << "," << after.y() << "," << after.z()
+        << std::endl;
 
-  // 应该自动更新
-  assert(after == osg::Vec3(5, 1, 0));
+    // 应该自动更新
+    assert(after == osg::Vec3(5, 1, 0));
 
-  std::cout << "PASS\n";
+    entity_manager.set_parent(root, root2);
+    transform_manager.set_local(root2, osg::Matrix::translate(100, 0, 0));
+    osg::Vec3 after2 = get_translation(transform_manager.get_world(child));
+    assert(after2 == osg::Vec3(105, 1, 0));
+
+    entity_manager.set_parent(root, {INVALID_ID, 0});
+    osg::Vec3 after3 = get_translation(transform_manager.get_world(child));
+    assert(after3 == osg::Vec3(5, 1, 0));
+
+    std::cout << "PASS\n";
 }
 
 void test_ecs2()
 {
-  test_transform_basic();
-  test_dirty_propagation();
+    test_transform_basic();
+    test_dirty_propagation();
     //test_transform();
 }

@@ -11,7 +11,7 @@ struct Entity
 {
     uint32_t index;
     uint32_t version;
-  //  std::string debug_name;
+    //  std::string debug_name;
 };
 
 class EntityManager
@@ -41,7 +41,7 @@ public:
 
             if (nodes.size() <= index)
             {
-              std::cout << "\n";
+                std::cout << "\n";
             }
             Scene::instance().ensure(index);
         }
@@ -78,7 +78,7 @@ public:
 
     void set_parent(Entity child, Entity parent)
     {
-        if (!is_alive(child) || !is_alive(parent))
+        if (!is_alive(child))
             return;
 
         uint32_t c = child.index;
@@ -87,10 +87,18 @@ public:
         if (c == p)
             return;
 
-        if (is_ancestor(c, p))
+        if (p != INVALID_ID && !is_alive(parent))
             return;
 
         detach(c);
+
+        if (p == INVALID_ID)
+        {
+            nodes[c].parent = INVALID_ID;
+
+            Scene::instance().dirty(child);
+            return;
+        }
 
         Node& parentNode = nodes[p];
         Node& childNode = nodes[c];
@@ -98,6 +106,7 @@ public:
         childNode.parent = p;
 
         childNode.nextSibling = parentNode.firstChild;
+        childNode.prevSibling = INVALID_ID;
 
         if (parentNode.firstChild != INVALID_ID)
         {
@@ -105,6 +114,7 @@ public:
         }
 
         parentNode.firstChild = c;
+        Scene::instance().dirty(child);
     }
 
     Entity get_parent(Entity e) const
@@ -193,12 +203,12 @@ private:
     }
 
     bool is_ancestor(uint32_t child, uint32_t parent)
-    { 
+    {
         uint32_t p = nodes[child].parent;
-     // int cnt = 0;
+        // int cnt = 0;
         while (p != INVALID_ID)
         {
-       // std::cout << p << "   cnt: " << cnt++ << std::endl;
+            // std::cout << p << "   cnt: " << cnt++ << std::endl;
             if (p == parent)
                 return true;
             p = nodes[p].parent;

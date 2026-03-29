@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+struct Entity;
 class EntityManager;
 class TransformManager;
 class RenderInfoManager;
@@ -18,5 +19,7 @@ public:
 
     void init(size_t capacity);
     void ensure(size_t index);
+
+    void dirty(Entity e);
     
 };

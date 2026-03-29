@@ -84,6 +84,10 @@ public:
         em = manager;
     }
 
+    void mark_dirty(Entity e) {
+        mark_dirty_recursive(e.index);
+    }
+
 private:
     void mark_dirty_recursive(uint32_t idx)
     {
