@@ -10,6 +10,7 @@
 #include <random>
 
 #include "BatchSystem.h"
+#include "test_ecs2.h"
 #include "manager/TransformManager.h"
 #include "manager/MeshManager.h"
 
@@ -239,6 +240,13 @@ void test_ecs(osg::Group* root)
 osg::Node * create_instance();
 
 int main() {
+
+    test_ecs2();
+
+    getchar();
+
+    return -1;
+
     osgViewer::Viewer view;
     osg::Group* root = new osg::Group;
     // osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(shader_dir() + "/model/" + "orb.obj");

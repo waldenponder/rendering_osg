@@ -10,9 +10,9 @@ class TransformManager
 public:
     void init(size_t capacity)
     {
-        local.resize(capacity, osg::Matrix::identity());
-        world.resize(capacity, osg::Matrix::identity());
-        dirty.resize(capacity, true);
+        local.reserve(capacity);
+        world.reserve(capacity);
+        dirty.reserve(capacity);
     }
 
     void ensure(size_t index)
@@ -55,7 +55,7 @@ public:
 
         uint32_t parent = em->get_parent_index(idx);
 
-        if (parent == INVALID)
+        if (parent == INVALID_ID)
         {
             world[idx] = local[idx];
         }

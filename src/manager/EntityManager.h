@@ -5,18 +5,24 @@
 
 #include "../Scene.h"
 
-static constexpr uint32_t INVALID = 0xFFFFFFFF;
+static constexpr uint32_t INVALID_ID = 0xFFFFFFFF;
 
 struct Entity
 {
     uint32_t index;
     uint32_t version;
+  //  std::string debug_name;
 };
 
 class EntityManager
 {
 public:
     EntityManager() = default;
+
+    void init(size_t capacity)
+    {
+        versions.reserve(capacity);
+    }
 
     Entity create()
     {
@@ -29,9 +35,14 @@ public:
         }
         else
         {
-            index = versions.size();
+            index = static_cast<uint32_t>(versions.size());
             versions.push_back(0);
             nodes.emplace_back();
+
+            if (nodes.size() <= index)
+            {
+              std::cout << "\n";
+            }
             Scene::instance().ensure(index);
         }
 
@@ -47,7 +58,7 @@ public:
 
         detach(idx);
 
-        while (nodes[idx].firstChild != INVALID)
+        while (nodes[idx].firstChild != INVALID_ID)
         {
             uint32_t child = nodes[idx].firstChild;
             destroy({child, versions[child]});
@@ -88,7 +99,7 @@ public:
 
         childNode.nextSibling = parentNode.firstChild;
 
-        if (parentNode.firstChild != INVALID)
+        if (parentNode.firstChild != INVALID_ID)
         {
             nodes[parentNode.firstChild].prevSibling = c;
         }
@@ -102,7 +113,7 @@ public:
             return invalid_entity();
 
         uint32_t p = nodes[e.index].parent;
-        if (p == INVALID)
+        if (p == INVALID_ID)
             return invalid_entity();
 
         return {p, versions[p]};
@@ -118,7 +129,7 @@ public:
 
         uint32_t child = nodes[e.index].firstChild;
 
-        while (child != INVALID)
+        while (child != INVALID_ID)
         {
             func(Entity{child, versions[child]});
             child = nodes[child].nextSibling;
@@ -131,7 +142,7 @@ public:
     {
         uint32_t child = nodes[idx].firstChild;
 
-        while (child != INVALID)
+        while (child != INVALID_ID)
         {
             func(child);
             child = nodes[child].nextSibling;
@@ -146,17 +157,17 @@ public:
 private:
     struct Node
     {
-        uint32_t parent = INVALID;
-        uint32_t firstChild = INVALID;
-        uint32_t nextSibling = INVALID;
-        uint32_t prevSibling = INVALID;
+        uint32_t parent = INVALID_ID;
+        uint32_t firstChild = INVALID_ID;
+        uint32_t nextSibling = INVALID_ID;
+        uint32_t prevSibling = INVALID_ID;
     };
 
     void detach(uint32_t idx)
     {
         Node& n = nodes[idx];
 
-        if (n.parent == INVALID)
+        if (n.parent == INVALID_ID)
             return;
 
         Node& parent = nodes[n.parent];
@@ -166,26 +177,26 @@ private:
             parent.firstChild = n.nextSibling;
         }
 
-        if (n.prevSibling != INVALID)
+        if (n.prevSibling != INVALID_ID)
         {
             nodes[n.prevSibling].nextSibling = n.nextSibling;
         }
 
-        if (n.nextSibling != INVALID)
+        if (n.nextSibling != INVALID_ID)
         {
             nodes[n.nextSibling].prevSibling = n.prevSibling;
         }
 
-        n.parent = INVALID;
-        n.nextSibling = INVALID;
-        n.prevSibling = INVALID;
+        n.parent = INVALID_ID;
+        n.nextSibling = INVALID_ID;
+        n.prevSibling = INVALID_ID;
     }
 
     bool is_ancestor(uint32_t child, uint32_t parent)
     { 
         uint32_t p = nodes[child].parent;
      // int cnt = 0;
-        while (p != INVALID)
+        while (p != INVALID_ID)
         {
        // std::cout << p << "   cnt: " << cnt++ << std::endl;
             if (p == parent)
@@ -195,7 +206,7 @@ private:
         return false;
     }
 
-    static Entity invalid_entity() { return {INVALID, 0}; }
+    static Entity invalid_entity() { return {INVALID_ID, 0}; }
 
 private:
     std::vector<uint32_t> versions;

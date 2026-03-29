@@ -49,9 +49,9 @@ class RenderInfoManager
 public:
     void init(size_t capacity)
     {
-        localInfo.resize(capacity);
-        worldInfo.resize(capacity);
-        dirty.resize(capacity, true);
+        localInfo.reserve(capacity);
+        worldInfo.reserve(capacity);
+        dirty.reserve(capacity);
     }
 
     void ensure(size_t index)
@@ -181,8 +181,8 @@ private:
             return;
 
         // 确保父节点是最新的
-        uint32_t parent = (em ? em->get_parent_index(idx) : INVALID);
-        if (parent != INVALID)
+        uint32_t parent = (em ? em->get_parent_index(idx) : INVALID_ID);
+        if (parent != INVALID_ID)
         {
             update_world(parent);
         }
@@ -190,7 +190,7 @@ private:
         RenderInfo& world = worldInfo[idx];
         const RenderInfo& local = localInfo[idx];
         const RenderInfo* parentWorld =
-            (parent != INVALID) ? &worldInfo[parent] : nullptr;
+            (parent != INVALID_ID) ? &worldInfo[parent] : nullptr;
 
         // 可见性：自身局部可见 且 父节点世界可见（无父节点时视为可见）
         world.visible =

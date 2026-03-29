@@ -31,6 +31,7 @@ using namespace std;
 
 // ==================== 性能测试函数 ====================
 
+#if 0
 // 测试1：创建大量实体（顺序）
 void testCreatePerformance(EntityManager& em, size_t count)
 {
@@ -208,3 +209,4 @@ int main2()
 
     return 0;
 }
+#endif
