@@ -1,5 +1,7 @@
 // custom_drawable.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
+
+#if 0
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include "common/common.h"
@@ -464,3 +466,4 @@ int main()
     view.realize();
     return view.run();
 }
+#endif
