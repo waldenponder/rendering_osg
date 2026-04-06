@@ -1,3 +1,6 @@
-/3rdparty
-/build
-/osg3.6.5
+3rdparty
+build
+osg3.6.5
+out
+shader
+.vs

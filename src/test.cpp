@@ -13,6 +13,7 @@
 #include "test_ecs2.h"
 #include "manager/TransformManager.h"
 #include "manager/MeshManager.h"
+#include "test_jobsystem.h"
 
 #define WINDOWSIZE 8
 
@@ -199,17 +200,18 @@ void test_ecs(osg::Group* root)
     cout << "aaaa: " << (t2 - t1) << "\n";
 
     {
-      auto aa = clock();
+        auto aa = clock();
 
-      for (auto e : entities) {
-        MeshData data1 = get_mesh_func(e);
-        mesh_manager.set_mesh(e, data1);
-      }
-      auto bb = clock();
-      cout << "get-mesh: " << (bb - aa) << "\n";
+        for (auto e : entities)
+        {
+            MeshData data1 = get_mesh_func(e);
+            mesh_manager.set_mesh(e, data1);
+        }
+        auto bb = clock();
+        cout << "get-mesh: " << (bb - aa) << "\n";
     }
 
-      t2 = clock();
+    t2 = clock();
     std::vector<Batch> batchs = BatchSystem::computeBatch(entities);
 
     auto t3 = clock();
@@ -225,7 +227,7 @@ void test_ecs(osg::Group* root)
     auto t5 = clock();
     cout << "ddd: " << (t5 - t4) << "\n";
 
-  
+
     for (auto& data : datas)
     {
         osg::ref_ptr<osg::Geode> geode = new osg::Geode;
@@ -237,12 +239,12 @@ void test_ecs(osg::Group* root)
     cout << "eee: " << (t6 - t5) << "\n";
 }
 
-osg::Node * create_instance();
+osg::Node* create_instance();
 
-int main() {
-
+int main()
+{
     test_ecs2();
-
+    test_jobsystem();
     getchar();
 
     return -1;
@@ -272,7 +274,7 @@ int main() {
     //        objNode->accept(cv_);
     //}
 
-//    test_ecs(root);
+    //    test_ecs(root);
 
     auto tt = create_instance();
     root->addChild(tt);
