@@ -7,7 +7,10 @@ set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 # 直接指定要包含的目录
 set(INCLUDE_DIRS 
     ${CMAKE_CURRENT_SOURCE_DIR}/osg3.6.5/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/util/incude
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+	${CMAKE_CURRENT_SOURCE_DIR}/include/common
+	${CMAKE_CURRENT_SOURCE_DIR}/include/manager
+	${CMAKE_CURRENT_SOURCE_DIR}/include/utils
     # 可以添加更多目录
     # "${CMAKE_CURRENT_SOURCE_DIR}/other/include"
 )
