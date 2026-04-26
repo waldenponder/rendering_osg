@@ -14,6 +14,7 @@
 #include "manager/TransformManager.h"
 #include "manager/MeshManager.h"
 #include "test_jobsystem.h"
+#include "ThreeDimManipulator.h"
 
 #define WINDOWSIZE 8
 
@@ -243,11 +244,11 @@ osg::Node* create_instance();
 
 int main()
 {
-    test_ecs2();
-    test_jobsystem();
-    getchar();
+    //test_ecs2();
+    //test_jobsystem();
+    //getchar();
 
-    return -1;
+    //return -1;
 
     osgViewer::Viewer view;
     osg::Group* root = new osg::Group;
@@ -266,18 +267,19 @@ int main()
         "tree1b_lod2_2.obj"
     };
 
-    //for (auto& s : objFileNames)
-    //{
-    //    std::string path = shader_dir() + "/model/" + s;
-    //    osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(path);
-    //    if (objNode)
-    //        objNode->accept(cv_);
-    //}
+    for (auto& s : objFileNames)
+    {
+        std::string path = MODEL_DIR + s;
+        osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(path);
+        //if (objNode)
+        //    objNode->accept(cv_);
+        root->addChild(objNode);
+    }
 
     //    test_ecs(root);
 
-    auto tt = create_instance();
-    root->addChild(tt);
+   // auto tt = create_instance();
+  //  root->addChild(tt);
     //root->addChild(create_lines(view));
     view.addEventHandler(new osgViewer::StatsHandler);
     view.setSceneData(root);
@@ -286,6 +288,8 @@ int main()
     camera->setSmallFeatureCullingPixelSize(2.0f); //小对象剔除
 
     add_event_handler(view);
+
+    view.setCameraManipulator(new ThreeDimManipulator(&view));
     // view.addEventHandler(new PickHandler);
     osg::setNotifyLevel(osg::NotifySeverity::NOTICE);
     view.realize();

@@ -38,7 +38,7 @@ source_group(TREE ${SOURCE_DIR} FILES ${SOURCES})
 # source_group(TREE ${SOURCE_DIR} FILES ${HEADER_FILES} PREFIX "Header Files")
 # source_group(TREE ${SOURCE_DIR} FILES ${SOURCE_FILES} PREFIX "Source Files")
 
-
+target_compile_definitions(${PROJECT_NAME} PRIVATE MODEL_DIR="D:/rendering_osg/shader/model/")
 
 target_link_libraries(${PROJECT_NAME}
 	debug ${LIB_DIR}/OpenThreadsd.lib

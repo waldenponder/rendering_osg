@@ -32,7 +32,7 @@ inline void add_event_handler(osgViewer::Viewer&   viewer)
 	//	viewer.addEventHandler(new osgGA::TrackballManipulator);
 	// set up the camera manipulators.
 
-	
+	if (0)
 	{
 		osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
 
