@@ -21,6 +21,10 @@ public:
 	bool performMovement() override;
 
 private:
+	void pan(int dx0, int dy0, const osg::Vec2& oldPos, const osg::Vec2& newPos);
+
+	osg::Vec3 get_word_pos(float xNormal, float yNormal);
+
 	osg::Camera* getCamera() const;
 	void focus();
 	void rectZoomOrth();
