@@ -26,17 +26,17 @@ void GridUpdateCallback::operator()(
         center,
         up);
 
-    double dist =
-        fabs(eye.z());
+    double dist = (center - eye).length();
+      //  fabs(eye.z());
 
     double base =
         pow(10.0,
             floor(log10(dist)));
     //---
-    double step = std::max(base, 100.0);
+    double step = std::max(base, 1.0);
 
     grid->updateGrid(
-        center,
+        osg::Vec3d(),
         step,
         50);
 

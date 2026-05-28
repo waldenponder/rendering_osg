@@ -281,7 +281,7 @@ int main()
 
     auto grid = new DynamicGrid;
     grid->updateGrid(osg::Vec3d(), 5, 10);
-   // grid->setUpdateCallback(new GridUpdateCallback(&viewer));
+    grid->setUpdateCallback(new GridUpdateCallback(&viewer));
     root->addChild(grid);
 
     //    test_ecs(root);
