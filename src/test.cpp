@@ -10,6 +10,8 @@
 #include <random>
 
 #include "BatchSystem.h"
+#include "DynamicGrid .h"
+#include "GridUpdateCallback.h"
 #include "test_ecs2.h"
 #include "manager/TransformManager.h"
 #include "manager/MeshManager.h"
@@ -250,7 +252,7 @@ int main()
 
     //return -1;
 
-    osgViewer::Viewer view;
+    osgViewer::Viewer viewer;
     osg::Group* root = new osg::Group;
     // osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(shader_dir() + "/model/" + "orb.obj");
     //root->addChild(objNode);
@@ -266,7 +268,7 @@ int main()
         "tree1b_lod1_2.obj", "tree1b_lod2_1.obj",
         "tree1b_lod2_2.obj"
     };
-
+    if (0)
     for (auto& s : objFileNames)
     {
         std::string path = MODEL_DIR + s;
@@ -276,22 +278,28 @@ int main()
         root->addChild(objNode);
     }
 
+
+    auto grid = new DynamicGrid;
+    grid->updateGrid(osg::Vec3d(), 5, 10);
+   // grid->setUpdateCallback(new GridUpdateCallback(&viewer));
+    root->addChild(grid);
+
     //    test_ecs(root);
 
    // auto tt = create_instance();
   //  root->addChild(tt);
     //root->addChild(create_lines(view));
-    view.addEventHandler(new osgViewer::StatsHandler);
-    view.setSceneData(root);
-    view.setUpViewInWindow(100, 100, 1280, 800);
-    auto* camera = view.getCamera();
+    viewer.addEventHandler(new osgViewer::StatsHandler);
+    viewer.setSceneData(root);
+    viewer.setUpViewInWindow(100, 100, 1280, 800);
+    auto* camera = viewer.getCamera();
     camera->setSmallFeatureCullingPixelSize(2.0f); //小对象剔除
 
-    add_event_handler(view);
+    add_event_handler(viewer);
 
    // view.setCameraManipulator(new ThreeDimManipulator(&view));
     // view.addEventHandler(new PickHandler);
     osg::setNotifyLevel(osg::NotifySeverity::NOTICE);
-    view.realize();
-    return view.run();
+    viewer.realize();
+    return viewer.run();
 }
