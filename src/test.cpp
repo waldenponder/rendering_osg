@@ -289,7 +289,7 @@ int main()
 
     add_event_handler(view);
 
-    view.setCameraManipulator(new ThreeDimManipulator(&view));
+   // view.setCameraManipulator(new ThreeDimManipulator(&view));
     // view.addEventHandler(new PickHandler);
     osg::setNotifyLevel(osg::NotifySeverity::NOTICE);
     view.realize();
