@@ -48,7 +48,7 @@ bool projectToPlane(osg::Camera *cam, const osg::Vec2 &ptScreen, const osg::Plan
     double A = m13 * n.x() + m23 * n.y() + m33 * n.z() - D * m43;
     double B = D * d - (a * n.x() + b * n.y() + c * n.z());
 
-    if (isEqual(A))
+    if (is_equal_zero(A))
         return false;
 
     double depth = B / A;
@@ -57,7 +57,7 @@ bool projectToPlane(osg::Camera *cam, const osg::Vec2 &ptScreen, const osg::Plan
     double pz = m31 * screenX + m32 * screenY + m33 * depth + m34;
     double pw = m41 * screenX + m42 * screenY + m43 * depth + m44;
 
-    if (isEqual(pw))
+    if (is_equal_zero(pw))
         return false;
 
     // 齐次归一化
