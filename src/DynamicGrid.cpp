@@ -1,75 +1,68 @@
 ﻿#include "DynamicGrid .h"
 #include <osg/Geometry>
 
-DynamicGrid::DynamicGrid()
-{
-	_geometry = new osg::Geometry;
-
-	_vertices = new osg::Vec3Array;
-	_colors = new osg::Vec4Array;
-
-	_geometry->setVertexArray(_vertices);
-
-	_geometry->setColorArray(_colors);
-	_geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
-
-	_geometry->addPrimitiveSet(
-		new osg::DrawArrays(GL_LINES, 0, 0));
-
-	addDrawable(_geometry);
-
-	_colors->push_back(osg::Vec4(0.7, 0.7, 0.7, 1));
-
-	getOrCreateStateSet()->setMode(
-		GL_LIGHTING,
-		osg::StateAttribute::OFF);
+DynamicGrid::DynamicGrid() {
+    
 }
 
+void DynamicGrid::init(const osg::Vec4 &color) {
+    _geometry = new osg::Geometry;
 
+    _vertices = new osg::Vec3Array;
+    _colors = new osg::Vec4Array;
 
-void DynamicGrid::updateGrid(
-	const osg::Vec3d& center,
-	double step,
-	int halfCount)
-{
-	_vertices->clear();
+    _geometry->setVertexArray(_vertices);
 
-	double size = step * halfCount;
+    _geometry->setColorArray(_colors);
+    _geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
 
-	double startX =
-		floor(center.x() / step) * step;
+    _geometry->addPrimitiveSet(new osg::DrawArrays(GL_LINES, 0, 0));
 
-	double startY =
-		floor(center.y() / step) * step;
+    addDrawable(_geometry);
 
-	for (int i = -halfCount; i <= halfCount; ++i)
-	{
-		double x = startX + i * step;
+    _colors->push_back(color);
+    _geometry->setColorArray(_colors);
 
-		_vertices->push_back(
-			osg::Vec3(x, startY - size, 0));
+    getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+}
 
-		_vertices->push_back(
-			osg::Vec3(x, startY + size, 0));
-	}
+void DynamicGrid::updateGrid(const osg::Vec3d &center, double step, int halfCount,
+                             const osg::Vec4 &color) {
 
-	for (int j = -halfCount; j <= halfCount; ++j)
-	{
-		double y = startY + j * step;
+    this->removeDrawables(0, getNumDrawables());
+    init(color);
 
-		_vertices->push_back(
-			osg::Vec3(startX - size, y, 0));
+    _vertices->clear();
 
-		_vertices->push_back(
-			osg::Vec3(startX + size, y, 0));
-	}
+    double size = step * halfCount;
 
-	auto da =
-		static_cast<osg::DrawArrays*>(
-			_geometry->getPrimitiveSet(0));
+    double startX = floor(center.x() / step) * step;
 
-	da->setCount(_vertices->size());
+    double startY = floor(center.y() / step) * step;
 
-	_vertices->dirty();
-	_geometry->dirtyBound();
+    for (int i = -halfCount; i <= halfCount; i += step) {
+        double x = startX + i * step;
+
+        _vertices->push_back(osg::Vec3(x, startY - size, 0));
+
+        _vertices->push_back(osg::Vec3(x, startY + size, 0));
+    }
+
+    for (int j = -halfCount; j <= halfCount; j += step) {
+        double y = startY + j * step;
+
+        _vertices->push_back(osg::Vec3(startX - size, y, 0));
+
+        _vertices->push_back(osg::Vec3(startX + size, y, 0));
+    }
+
+    auto da = static_cast<osg::DrawArrays *>(_geometry->getPrimitiveSet(0));
+
+    da->setCount(_vertices->size());
+
+   // _geometry->setColorArray(_colors);
+    _vertices->dirty();
+    _geometry->dirtyBound();
+    _geometry->dirtyGLObjects();
+    //_geometry->releaseGLObjects();
 }

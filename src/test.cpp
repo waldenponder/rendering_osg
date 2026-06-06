@@ -246,49 +246,11 @@ osg::Node* create_instance();
 
 int main()
 {
-    //test_ecs2();
-    //test_jobsystem();
-    //getchar();
-
-    //return -1;
-
     osgViewer::Viewer viewer;
     osg::Group* root = new osg::Group;
-    // osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(shader_dir() + "/model/" + "orb.obj");
-    //root->addChild(objNode);
 
-    std::vector<std::string> objFileNames = {
-        "bunny.obj",
-        "bunny_decimated.obj",
-        "bunny_patched.obj", "column.obj",
-        "cube.obj", "hollowcube.obj",
-        "orb.obj", "platform.obj",
-        "tree.obj", "tree1b_lod0_1.obj",
-        "tree1b_lod0_2.obj", "tree1b_lod1_1.obj",
-        "tree1b_lod1_2.obj", "tree1b_lod2_1.obj",
-        "tree1b_lod2_2.obj"
-    };
-    if (0)
-    for (auto& s : objFileNames)
-    {
-        std::string path = MODEL_DIR + s;
-        osg::ref_ptr<osg::Node> objNode = osgDB::readNodeFile(path);
-        //if (objNode)
-        //    objNode->accept(cv_);
-        root->addChild(objNode);
-    }
+    root->setUpdateCallback(new GridUpdateCallback(&viewer, root));
 
-
-    auto grid = new DynamicGrid;
-    grid->updateGrid(osg::Vec3d(), 5, 10);
-    grid->setUpdateCallback(new GridUpdateCallback(&viewer));
-    root->addChild(grid);
-
-    //    test_ecs(root);
-
-   // auto tt = create_instance();
-  //  root->addChild(tt);
-    //root->addChild(create_lines(view));
     viewer.addEventHandler(new osgViewer::StatsHandler);
     viewer.setSceneData(root);
     viewer.setUpViewInWindow(100, 100, 1280, 800);
