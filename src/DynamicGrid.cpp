@@ -40,7 +40,7 @@ void DynamicGrid::updateGrid(const osg::Vec3d &center, double step, int halfCoun
 
     double startY = floor(center.y() / step) * step;
 
-    for (double i = -halfCount; i <= halfCount; i += step) {
+    for (double i = -halfCount; i <= halfCount; i ++) {
         double x = startX + i * step;
 
         _vertices->push_back(osg::Vec3(x, startY - size, 0));
@@ -48,7 +48,7 @@ void DynamicGrid::updateGrid(const osg::Vec3d &center, double step, int halfCoun
         _vertices->push_back(osg::Vec3(x, startY + size, 0));
     }
 
-    for (double j = -halfCount; j <= halfCount; j += step) {
+    for (double j = -halfCount; j <= halfCount; j ++) {
         double y = startY + j * step;
 
         _vertices->push_back(osg::Vec3(startX - size, y, 0));

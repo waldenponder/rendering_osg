@@ -10,7 +10,7 @@
 #include <osg/Vec4d>
 #include <osg/Viewport>
 
-double step_ = 5.0;
+double step_ = 10.0;
 size_t cnt = 0;
 
 osg::Vec4 COLOR1(0.7, 0.7, 0.7, 1);
@@ -42,7 +42,7 @@ uint32_t nextPowerOf2(uint32_t val) {
     return val + 1;
 }
 
-double nice_step(double val) {
+double nice_step2(double val) {
     if (val <= 0.0)
         return 2;
 
@@ -62,12 +62,26 @@ double nice_step(double val) {
         return 2;
     if (val > 0.05)
         return 1;
-    //if (val > 0.01)
-    //    return 0.02;
+    // if (val > 0.01)
+    //     return 0.02;
     return 2;
 }
 
-double stp_ = 10;
+double nice_step(double val) {
+    static const double steps[] = {
+        0.01,  0.02,      0.05,      0.1,       0.2,        0.5,        1,
+        2,     5,         10,        20,        50,         100,        200,
+        500,   1000,      2000,      4000,      8000,       16000,      32000,
+        64000, 64000 * 2, 64000 * 4, 64000 * 8, 64000 * 16, 64000 * 32, 64000 * 64};
+
+    for (auto s : steps) {
+        if (val <= s)
+            return s;
+    }
+
+    return 1000;
+}
+
 bool custom_val = false;
 
 void GridUpdateCallback::operator()(osg::Node *node, osg::NodeVisitor *nv) {
@@ -92,22 +106,22 @@ void GridUpdateCallback::operator()(osg::Node *node, osg::NodeVisitor *nv) {
 
     double len = (worldPt - worldPt2).length();
 
-    double ll = nice_step(len);
+    double TMP = nice_step(len);
 
     if (!custom_val)
-        stp_ = ll;
+        step_ = TMP;
 
-    step_ = std::max(step_, 0.01);
+    step_ = 10 * std::max(step_, 0.01);
 
     if (cnt % 100 == 0) {
         std::cout << "len :  " << len << "     , current:  " << _current << "    \n";
     }
 
-    if (!is_equal(stp_, _current)) {
-        std::cout << "world _current: " << stp_ << "   , " << _current << "\n";
-        _current = stp_;
-        _grid1->updateGrid(gridCenter, _current, 100, COLOR1);
-        _grid2->updateGrid(gridCenter, _current / 2.0, 200, COLOR2);
+    if (!is_equal(step_, _current)) {
+        std::cout << "world _current: " << step_ << "   , " << _current << "\n";
+        _current = step_;
+        _grid1->updateGrid(gridCenter, _current, 64, COLOR1);
+        _grid2->updateGrid(gridCenter, _current / 4.0, 64 * 4, COLOR2);
     }
 
     traverse(node, nv);
