@@ -25,4 +25,13 @@ subprocess.check_call([
     "--config", "Debug"
 ])
 
-print("Build Success")
+print("Build Success Debug")
+
+
+subprocess.check_call([
+    "cmake",
+    "--build", build_dir,
+    "--config", "Release"
+])
+
+print("Build Success Release")
