@@ -33,7 +33,7 @@ target_link_libraries(OSG::OSG INTERFACE
 )
 
 else()
-set(OSG_ROOT "${CMAKE_CURRENT_LIST_DIR}/../OpenSceneGraph")
+set(OSG_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../OpenSceneGraph")
 set(OSG_BUILD_DIR "${OSG_ROOT}/build")
 
 set(OSG_INCLUDE_DIR "${OSG_ROOT}/include")
