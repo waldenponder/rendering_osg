@@ -7,7 +7,7 @@ echo $SCRIPT_DIR
 export LD_LIBRARY_PATH="$SCRIPT_DIR/libs:$LD_LIBRARY_PATH"
 
 # 2. 【关键】告诉 Mesa 去本地的 dri 目录寻找 swrast_dri.so
-export LIBGL_DRIVERS_PATH="$SCRIPT_DIR/lib/dri"
+export LIBGL_DRIVERS_PATH="$SCRIPT_DIR/libs/dri"
 
 # 3. 强制使用软件渲染
 export LIBGL_ALWAYS_SOFTWARE=1
