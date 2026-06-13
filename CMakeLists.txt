@@ -36,9 +36,12 @@ ${CMAKE_SOURCE_DIR}/lib/OpenGL32.Lib
 )
 else()
 find_package(Threads REQUIRED)
+find_package(OpenGL REQUIRED)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     OSG::OSG
     Threads::Threads 
     ${CMAKE_DL_LIBS}
+	${OPENGL_LIBRARIES}   # 添加这一行，链接 OpenGL
 )
 endif()
