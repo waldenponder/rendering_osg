@@ -29,7 +29,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${INCLUDE_DIRS})
 
 source_group(TREE ${SOURCE_DIR} FILES ${SOURCES})
 
+if (WIN32)
 target_link_libraries(${PROJECT_NAME}  PRIVATE
 OSG::OSG
 ${CMAKE_SOURCE_DIR}/lib/OpenGL32.Lib
 )
+else()
+target_link_libraries(${PROJECT_NAME}  PRIVATE
+OSG::OSG
+)
+endif()
