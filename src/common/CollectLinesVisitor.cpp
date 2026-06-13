@@ -1,5 +1,5 @@
 #include "CollectLinesVisitor.h"
-#include <osg\Geometry>
+#include <osg/Geometry>
 
 class GetVertexArrayVisitor : public osg::ArrayVisitor
 {
