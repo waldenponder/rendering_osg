@@ -8,7 +8,9 @@
 
 #ifndef PCH_H
 #define PCH_H
+
+#ifdef WIN32
 #include "windows.h"
 // TODO: 添加要在此处预编译的标头
-
+#endif
 #endif //PCH_H
