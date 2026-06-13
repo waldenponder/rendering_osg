@@ -441,7 +441,7 @@ class PoolAllocatorWithFallback :
     void* mEnd;
 public:
     PoolAllocatorWithFallback(void* begin, void* end) noexcept
-            : PoolAllocator(begin, end), mBegin(begin), mEnd(end) {
+      : Self(begin, end), mBegin(begin), mEnd(end) {
     }
 
     PoolAllocatorWithFallback(void* begin, size_t size) noexcept
@@ -459,7 +459,7 @@ public:
 
     // our allocator concept
     void* alloc(size_t size = ELEMENT_SIZE, size_t alignment = ALIGNMENT) noexcept {
-        void* p = PoolAllocator::alloc(size, alignment);
+        void *p = Self::alloc(size, alignment);
         if (UTILS_UNLIKELY(!p)) {
             p = HeapAllocator::alloc(size, alignment);
         }
@@ -469,7 +469,7 @@ public:
 
     void free(void* p, size_t size) noexcept {
         if (UTILS_LIKELY(!isHeapAllocation(p))) {
-            PoolAllocator::free(p, size);
+            Self::free(p, size);
         } else {
             HeapAllocator::free(p);
         }
