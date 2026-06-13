@@ -76,7 +76,7 @@ bool ThreeDimManipulator::handleMouseDrag(const osgGA::GUIEventAdapter &ea,
                         _center = osg::Vec3(pos.x() - PT.x(), pos.y() - PT.y(),
                                             pos.z() - PT.z());
 
-                        return __super::handleMouseDrag(ea, us);
+                        return __Super::handleMouseDrag(ea, us);
                     }
                 }
             }
@@ -99,7 +99,7 @@ bool ThreeDimManipulator::handleMouseDrag(const osgGA::GUIEventAdapter &ea,
         }
     }
 
-    return __super::handleMouseDrag(ea, us);
+    return __Super::handleMouseDrag(ea, us);
 }
 
 bool ThreeDimManipulator::handleKeyDown(const osgGA::GUIEventAdapter &ea,
@@ -110,13 +110,13 @@ bool ThreeDimManipulator::handleKeyDown(const osgGA::GUIEventAdapter &ea,
         return true;
     }
 
-    return __super::handleKeyDown(ea, us);
+    return __Super::handleKeyDown(ea, us);
 }
 
 bool ThreeDimManipulator::handleKeyUp(const osgGA::GUIEventAdapter &ea,
                                       osgGA::GUIActionAdapter &us) {
     _keyType = -1;
-    return __super::handleKeyUp(ea, us);
+    return __Super::handleKeyUp(ea, us);
 }
 
 bool ThreeDimManipulator::handleMouseWheel(const osgGA::GUIEventAdapter &ea,
@@ -159,14 +159,14 @@ bool ThreeDimManipulator::handleMouseWheel(const osgGA::GUIEventAdapter &ea,
         _viewer->getCamera()->setProjectionMatrixAsOrtho2D(-w / 2, w / 2, -h / 2, h / 2);
     }
 
-    return __super::handleMouseWheel(ea, us);
+    return __Super::handleMouseWheel(ea, us);
 }
 
 bool ThreeDimManipulator::handleMouseRelease(const osgGA::GUIEventAdapter &ea,
                                              osgGA::GUIActionAdapter &us) {
     _buttonType = -1;
     // LOG_INFO << "RELEASE\n";
-    return __super::handleMouseRelease(ea, us);
+    return __Super::handleMouseRelease(ea, us);
 }
 
 bool ThreeDimManipulator::handleMousePush(const osgGA::GUIEventAdapter &ea,
@@ -175,7 +175,7 @@ bool ThreeDimManipulator::handleMousePush(const osgGA::GUIEventAdapter &ea,
     _buttonType = ea.getButton();
     _preMousePt = osg::Vec2(ea.getX(), ea.getY());
 
-    return __super::handleMousePush(ea, us);
+    return __Super::handleMousePush(ea, us);
 }
 
 void ThreeDimManipulator::rotateTrackball(const float px0, const float py0,
@@ -225,7 +225,7 @@ void ThreeDimManipulator::rotateTrackball(const float px0, const float py0,
 
 // 屏蔽父类实现
 bool ThreeDimManipulator::performMovement() {
-    return __super::performMovement();
+    return __Super::performMovement();
     return false;
 }
 
