@@ -28,3 +28,20 @@ for LIB in $LIBS; do
 done
 
 echo "✅ 所有依赖库已收集到 $DEST_DIR"
+
+
+# ... (原有收集逻辑) ...
+
+echo "✅ 常规依赖库已收集完毕。"
+
+# 手动补充 swrast_dri.so (纯软件渲染器)
+echo "正在手动补充 Mesa 软件渲染驱动 (swrast_dri.so)..."
+DRI_SRC_PATH="/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so"
+
+if [ -f "$DRI_SRC_PATH" ]; then
+    mkdir -p "$DEST_DIR/dri"
+    cp -L "$DRI_SRC_PATH" "$DEST_DIR/dri/"
+    echo "✅ swrast_dri.so 已成功打包至 dri 目录。"
+else
+    echo "⚠️ 警告: 未在系统中找到 $DRI_SRC_PATH，请检查是否安装了 mesa-dri-drivers。"
+fi
