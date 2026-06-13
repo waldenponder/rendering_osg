@@ -3,195 +3,198 @@
 #include <osgUtil/IntersectionVisitor>
 #include <random>
 
-ThreeDimManipulator::ThreeDimManipulator(osgViewer::Viewer* viewer) : _viewer(viewer)
-{
-	setAllowThrow(false);
+ThreeDimManipulator::ThreeDimManipulator(osgViewer::Viewer *viewer) : _viewer(viewer) {
+    setAllowThrow(false);
 }
 
-ThreeDimManipulator::~ThreeDimManipulator()
-{
+ThreeDimManipulator::~ThreeDimManipulator() {}
+
+bool ThreeDimManipulator::handleMouseDrag(const osgGA::GUIEventAdapter &ea,
+                                          osgGA::GUIActionAdapter &us) {
+    // LOG_INFO << "DRAG\t" << ea.getButton() << "\n";
+    // 用ea.getButton()获取的不是osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON
+    if (_buttonType != osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON)
+        return false;
+
+    // 按住shift,执行旋转操作，
+    if (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_SHIFT) {
+        if (_ga_t1 && _ga_t0)
+            rotateTrackball(_ga_t0->getXnormalized(), _ga_t0->getYnormalized(),
+                            _ga_t1->getXnormalized(), _ga_t1->getYnormalized(),
+                            getThrowScale(0));
+    } else {
+        osg::Camera *camera = getCamera();
+
+        if (camera) {
+            //--------------------------------------------------先求交，如果有交点，则要满足拖拽时鼠标跟随
+            if (_ga_t0 && _ga_t1) {
+                osg::ref_ptr<osgUtil::IntersectorGroup> intersectors =
+                    new osgUtil::IntersectorGroup;
+
+                intersectors->addIntersector(new osgUtil::LineSegmentIntersector(
+                    osgUtil::Intersector::PROJECTION, _ga_t0->getXnormalized(),
+                    _ga_t0->getYnormalized()));
+                osgUtil::IntersectionVisitor iv(intersectors.get());
+                //	iv.setTraversalMask(~(g::NM_GRID | g::NM_BACK_GROUND));
+                camera->accept(iv);
+
+                for (osg::ref_ptr<osgUtil::Intersector> &is :
+                     intersectors->getIntersectors()) {
+                    osgUtil::LineSegmentIntersector *lis =
+                        dynamic_cast<osgUtil::LineSegmentIntersector *>(is.get());
+                    if (lis && lis->containsIntersections()) {
+                        osg::Vec3 pos =
+                            lis->getFirstIntersection().getWorldIntersectPoint();
+
+                        osg::Matrix view_m;
+
+                        osg::Vec3 pt(_ga_t0->getXnormalized(), _ga_t0->getYnormalized(),
+                                     0);
+
+                        /*				pt = pos * view_m *
+                        camera->getProjectionMatrix();
+
+                        pt * osg::Matrix::inverse(camera->getProjectionMatrix()) = pos *
+                        view_m;*/
+                        // pos * view_m = pt *
+                        // osg::Matrix::inverse(camera->getProjectionMatrix());
+
+                        osg::Vec3 center;
+                        // view_m = osg::Matrix::translate(-center) *
+                        //	osg::Matrix::rotate(camera->getViewMatrix().getRotate()) *
+                        //	osg::Matrix::translate(0, 0, -_distance);
+
+                        osg::Vec3 PT =
+                            pt * osg::Matrix::inverse(camera->getProjectionMatrix()) *
+                            osg::Matrix::inverse(
+                                osg::Matrix::translate(0, 0, -_distance)) *
+                            osg::Matrix::inverse(
+                                osg::Matrix::rotate(camera->getViewMatrix().getRotate()));
+
+                        // pos * osg::Matrix::translate(-center) =
+                        //	pos - x = PT.x();
+                        _center = osg::Vec3(pos.x() - PT.x(), pos.y() - PT.y(),
+                                            pos.z() - PT.z());
+
+                        return __super::handleMouseDrag(ea, us);
+                    }
+                }
+            }
+
+            //--------------------------------------------------执行原来的逻辑
+            osg::Vec2 deltaPt = osg::Vec2(ea.getX(), ea.getY()) - _preMousePt;
+            _preMousePt = osg::Vec2(ea.getX(), ea.getY());
+
+            float w = camera->getViewport()->width();
+            float h = camera->getViewport()->height();
+
+            double screenWidthInWorld = 1000; // _viewer->screenWidthInWorld();
+            osg::Vec3d dv = osg::Vec3(deltaPt[0] / w * screenWidthInWorld,
+                                      deltaPt[1] / h * (screenWidthInWorld * (h / w)), 0);
+
+            osg::Matrix rotation_matrix;
+            rotation_matrix.makeRotate(_rotation);
+
+            _center -= dv * rotation_matrix;
+        }
+    }
+
+    return __super::handleMouseDrag(ea, us);
 }
 
-bool ThreeDimManipulator::handleMouseDrag(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us)
-{
-	//LOG_INFO << "DRAG\t" << ea.getButton() << "\n";
-	//用ea.getButton()获取的不是osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON
-	if (_buttonType != osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON) return false;
+bool ThreeDimManipulator::handleKeyDown(const osgGA::GUIEventAdapter &ea,
+                                        osgGA::GUIActionAdapter &us) {
+    _keyType = osgGA::GUIEventAdapter::KEY_Space;
 
-	//按住shift,执行旋转操作，
-	if (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_SHIFT)
-	{
-		if (_ga_t1 && _ga_t0)
-			rotateTrackball(_ga_t0->getXnormalized(), _ga_t0->getYnormalized(),
-			                _ga_t1->getXnormalized(), _ga_t1->getYnormalized(),
-			                getThrowScale(0));
-	}
-	else
-	{
-		osg::Camera* camera = getCamera();
+    if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Space) {
+        return true;
+    }
 
-		if (camera)
-		{
-			//--------------------------------------------------先求交，如果有交点，则要满足拖拽时鼠标跟随
-			if (_ga_t0 && _ga_t1)
-			{
-				osg::ref_ptr<osgUtil::IntersectorGroup> intersectors = new osgUtil::IntersectorGroup;
-
-				intersectors->addIntersector(new osgUtil::LineSegmentIntersector(
-					osgUtil::Intersector::PROJECTION, _ga_t0->getXnormalized(), _ga_t0->getYnormalized()));
-				osgUtil::IntersectionVisitor iv(intersectors.get());
-				//	iv.setTraversalMask(~(g::NM_GRID | g::NM_BACK_GROUND));
-				camera->accept(iv);
-
-				for (osg::ref_ptr<osgUtil::Intersector>& is : intersectors->getIntersectors())
-				{
-					osgUtil::LineSegmentIntersector* lis = dynamic_cast<osgUtil::LineSegmentIntersector*>(is.get());
-					if (lis && lis->containsIntersections())
-					{
-						osg::Vec3 pos = lis->getFirstIntersection().getWorldIntersectPoint();
-
-						osg::Matrix view_m;
-
-						osg::Vec3 pt(_ga_t0->getXnormalized(), _ga_t0->getYnormalized(), 0);
-
-						/*				pt = pos * view_m * camera->getProjectionMatrix();
-						
-						pt * osg::Matrix::inverse(camera->getProjectionMatrix()) = pos * view_m;*/
-						//pos * view_m = pt * osg::Matrix::inverse(camera->getProjectionMatrix());
-
-						osg::Vec3 center;
-						//view_m = osg::Matrix::translate(-center) *
-						//	osg::Matrix::rotate(camera->getViewMatrix().getRotate()) *
-						//	osg::Matrix::translate(0, 0, -_distance);
-
-						osg::Vec3 PT = pt * osg::Matrix::inverse(camera->getProjectionMatrix()) *
-							osg::Matrix::inverse(osg::Matrix::translate(0, 0, -_distance)) * osg::Matrix::inverse(
-								osg::Matrix::rotate(camera->getViewMatrix().getRotate()));
-
-						//pos * osg::Matrix::translate(-center) =
-						//	pos - x = PT.x();
-						_center = osg::Vec3(pos.x() - PT.x(), pos.y() - PT.y(), pos.z() - PT.z());
-
-						return __super::handleMouseDrag(ea, us);
-					}
-				}
-			}
-
-			//--------------------------------------------------执行原来的逻辑
-			osg::Vec2 deltaPt = osg::Vec2(ea.getX(), ea.getY()) - _preMousePt;
-			_preMousePt = osg::Vec2(ea.getX(), ea.getY());
-
-			float w = camera->getViewport()->width();
-			float h = camera->getViewport()->height();
-
-			double screenWidthInWorld = 1000; // _viewer->screenWidthInWorld();
-			osg::Vec3d dv = osg::Vec3(deltaPt[0] / w * screenWidthInWorld,
-			                          deltaPt[1] / h * (screenWidthInWorld * (h / w)), 0);
-
-			osg::Matrix rotation_matrix;
-			rotation_matrix.makeRotate(_rotation);
-
-			_center -= dv * rotation_matrix;
-		}
-	}
-
-	return __super::handleMouseDrag(ea, us);
+    return __super::handleKeyDown(ea, us);
 }
 
-bool ThreeDimManipulator::handleKeyDown(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us)
-{
-	_keyType = osgGA::GUIEventAdapter::KEY_Space;
-
-	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Space)
-	{
-		return true;
-	}
-
-	return __super::handleKeyDown(ea, us);
+bool ThreeDimManipulator::handleKeyUp(const osgGA::GUIEventAdapter &ea,
+                                      osgGA::GUIActionAdapter &us) {
+    _keyType = -1;
+    return __super::handleKeyUp(ea, us);
 }
 
-bool ThreeDimManipulator::handleKeyUp(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us)
-{
-	_keyType = -1;
-	return __super::handleKeyUp(ea, us);
+bool ThreeDimManipulator::handleMouseWheel(const osgGA::GUIEventAdapter &ea,
+                                           osgGA::GUIActionAdapter &us) {
+    bool bHandle = false;
+
+    const bool bOrth = false;
+    float factor = bOrth ? .1 : .3;
+
+    if (ea.getEventType() == osgGA::GUIEventAdapter::SCROLL) {
+        osg::Vec3d eye, center, up;
+        this->getTransformation(eye, center, up);
+
+        // osg::Vec3 mousePt = util::screenToWorld(getCamera(), osg::Vec3(ea.getX(),
+        // ea.getY(), 0));
+
+        // osg::Vec3 delta = bOrth ? mousePt - _center : mousePt - eye;
+
+        // if (ea.getScrollingMotion() == osgGA::GUIEventAdapter::SCROLL_UP)
+        //{
+        //	bOrth ? _zoomFactor *= (1.0 - factor) : _distance *= (1.0 - factor);
+        //	_center += (delta * factor);
+        //	bHandle = true;
+        // }
+        // else if (ea.getScrollingMotion() == osgGA::GUIEventAdapter::SCROLL_DOWN)
+        //{
+        //	bOrth ? _zoomFactor *= (1.0 + factor) : _distance *= (1.0 + factor);
+        //	_center -= (delta * factor);
+        //	bHandle = true;
+        // }
+    }
+
+    if (bHandle && bOrth) {
+        const double viewPortW = _viewer->getCamera()->getViewport()->width();
+        const double viewPortH = _viewer->getCamera()->getViewport()->height();
+
+        float w = viewPortW * _zoomFactor;
+        float h = viewPortH * _zoomFactor;
+
+        _viewer->getCamera()->setProjectionMatrixAsOrtho2D(-w / 2, w / 2, -h / 2, h / 2);
+    }
+
+    return __super::handleMouseWheel(ea, us);
 }
 
-bool ThreeDimManipulator::handleMouseWheel(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us)
-{
-	bool bHandle = false;
-
-	const bool bOrth = false;
-	float factor = bOrth ? .1 : .3;
-
-	if (ea.getEventType() == osgGA::GUIEventAdapter::SCROLL)
-	{
-		osg::Vec3d eye, center, up;
-		this->getTransformation(eye, center, up);
-
-		//osg::Vec3 mousePt = util::screenToWorld(getCamera(), osg::Vec3(ea.getX(), ea.getY(), 0));
-
-		//osg::Vec3 delta = bOrth ? mousePt - _center : mousePt - eye;
-
-		//if (ea.getScrollingMotion() == osgGA::GUIEventAdapter::SCROLL_UP)
-		//{
-		//	bOrth ? _zoomFactor *= (1.0 - factor) : _distance *= (1.0 - factor);
-		//	_center += (delta * factor);
-		//	bHandle = true;
-		//}
-		//else if (ea.getScrollingMotion() == osgGA::GUIEventAdapter::SCROLL_DOWN)
-		//{
-		//	bOrth ? _zoomFactor *= (1.0 + factor) : _distance *= (1.0 + factor);
-		//	_center -= (delta * factor);
-		//	bHandle = true;
-		//}
-	}
-
-	if (bHandle && bOrth)
-	{
-		const double viewPortW = _viewer->getCamera()->getViewport()->width();
-		const double viewPortH = _viewer->getCamera()->getViewport()->height();
-
-		float w = viewPortW * _zoomFactor;
-		float h = viewPortH * _zoomFactor;
-
-		_viewer->getCamera()->setProjectionMatrixAsOrtho2D(-w / 2, w / 2, -h / 2, h / 2);
-	}
-
-	return __super::handleMouseWheel(ea, us);
+bool ThreeDimManipulator::handleMouseRelease(const osgGA::GUIEventAdapter &ea,
+                                             osgGA::GUIActionAdapter &us) {
+    _buttonType = -1;
+    // LOG_INFO << "RELEASE\n";
+    return __super::handleMouseRelease(ea, us);
 }
 
-bool ThreeDimManipulator::handleMouseRelease(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us)
-{
-	_buttonType = -1;
-	//LOG_INFO << "RELEASE\n";
-	return __super::handleMouseRelease(ea, us);
+bool ThreeDimManipulator::handleMousePush(const osgGA::GUIEventAdapter &ea,
+                                          osgGA::GUIActionAdapter &us) {
+    // LOG_INFO << "PUSH\n";
+    _buttonType = ea.getButton();
+    _preMousePt = osg::Vec2(ea.getX(), ea.getY());
+
+    return __super::handleMousePush(ea, us);
 }
 
-bool ThreeDimManipulator::handleMousePush(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us)
-{
-	//LOG_INFO << "PUSH\n";
-	_buttonType = ea.getButton();
-	_preMousePt = osg::Vec2(ea.getX(), ea.getY());
-
-	return __super::handleMousePush(ea, us);
-}
-
-void ThreeDimManipulator::rotateTrackball(const float px0, const float py0, const float px1, const float py1,
-                                          const float scale)
-{
+void ThreeDimManipulator::rotateTrackball(const float px0, const float py0,
+                                          const float px1, const float py1,
+                                          const float scale) {
 #pragma region 基类的实现
-	osg::Vec3d axis;
-	float angle;
+    osg::Vec3d axis;
+    float angle;
 
-	trackball(axis, angle, px0 + (px1 - px0) * scale, py0 + (py1 - py0) * scale, px0, py0);
+    trackball(axis, angle, px0 + (px1 - px0) * scale, py0 + (py1 - py0) * scale, px0,
+              py0);
 
-	osg::Quat new_rotate;
-	new_rotate.makeRotate(angle, axis);
+    osg::Quat new_rotate;
+    new_rotate.makeRotate(angle, axis);
 
-	_rotation = _rotation * new_rotate;
+    _rotation = _rotation * new_rotate;
 #pragma endregion
 
-	osg::Vec3 bbCenter; //获取旋转中心
+    osg::Vec3 bbCenter; // 获取旋转中心
 #if 0
 	{
 		osg::ComputeBoundsVisitor cbVisitor;
@@ -216,52 +219,48 @@ void ThreeDimManipulator::rotateTrackball(const float px0, const float py0, cons
 	}
 #endif
 
-	//以bbCenter为中心旋转_center
-	_center = new_rotate * (_center - bbCenter) + bbCenter;
+    // 以bbCenter为中心旋转_center
+    _center = new_rotate * (_center - bbCenter) + bbCenter;
 }
 
-//屏蔽父类实现
-bool ThreeDimManipulator::performMovement()
-{
-	return __super::performMovement();
-	return false;
+// 屏蔽父类实现
+bool ThreeDimManipulator::performMovement() {
+    return __super::performMovement();
+    return false;
 }
 
-osg::Vec3 ThreeDimManipulator::get_word_pos(float xNormal, float yNormal)
-{
-	osg::ref_ptr<osgUtil::IntersectorGroup> intersectors = new osgUtil::IntersectorGroup;
+osg::Vec3 ThreeDimManipulator::get_word_pos(float xNormal, float yNormal) {
+    osg::ref_ptr<osgUtil::IntersectorGroup> intersectors = new osgUtil::IntersectorGroup;
 
-	intersectors->addIntersector(
-		new osgUtil::LineSegmentIntersector(osgUtil::Intersector::PROJECTION, xNormal, yNormal));
-	osgUtil::IntersectionVisitor iv(intersectors.get());
-	_viewer->getCamera()->accept(iv);
+    intersectors->addIntersector(new osgUtil::LineSegmentIntersector(
+        osgUtil::Intersector::PROJECTION, xNormal, yNormal));
+    osgUtil::IntersectionVisitor iv(intersectors.get());
+    _viewer->getCamera()->accept(iv);
 
-	for (osg::ref_ptr<osgUtil::Intersector>& is : intersectors->getIntersectors())
-	{
-		osgUtil::LineSegmentIntersector* lis = dynamic_cast<osgUtil::LineSegmentIntersector*>(is.get());
-		if (lis && lis->containsIntersections())
-		{
-			osg::Vec3 pos = lis->getFirstIntersection().getWorldIntersectPoint();
-			return pos;
-		}
-	}
+    for (osg::ref_ptr<osgUtil::Intersector> &is : intersectors->getIntersectors()) {
+        osgUtil::LineSegmentIntersector *lis =
+            dynamic_cast<osgUtil::LineSegmentIntersector *>(is.get());
+        if (lis && lis->containsIntersections()) {
+            osg::Vec3 pos = lis->getFirstIntersection().getWorldIntersectPoint();
+            return pos;
+        }
+    }
 
-	return osg::Vec3();
+    return osg::Vec3();
 }
 
-osg::Camera* ThreeDimManipulator::getCamera() const
-{
-	osg::Camera* c = nullptr;
-	if (_viewer && (c = _viewer->getCamera()))
-		return c;
+osg::Camera *ThreeDimManipulator::getCamera() const {
+    osg::Camera *c = nullptr;
+    if (_viewer && (c = _viewer->getCamera()))
+        return c;
 
-	return nullptr;
+    return nullptr;
 }
 
-void ThreeDimManipulator::pan(int dx0, int dy0, const osg::Vec2& oldPos, const osg::Vec2& newPos)
-{
-	if (oldPos == newPos)
-		return;
+void ThreeDimManipulator::pan(int dx0, int dy0, const osg::Vec2 &oldPos,
+                              const osg::Vec2 &newPos) {
+    if (oldPos == newPos)
+        return;
 #if 0
 	VKPerspectiveCameraInfo* persInfo = dynamic_cast<VKPerspectiveCameraInfo*>(m_cameraInfo.get());
 
@@ -325,7 +324,6 @@ void ThreeDimManipulator::pan(int dx0, int dy0, const osg::Vec2& oldPos, const o
 	double dy = out.Y() - py;
 	double dz = out.Z() - pz;
 #endif
-
 
 #if 0
 	idea::Vector3d offset(dx, dy, dz);
