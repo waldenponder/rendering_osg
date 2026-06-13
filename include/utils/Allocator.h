@@ -435,7 +435,8 @@ template <
 class PoolAllocatorWithFallback :
         private PoolAllocator<ELEMENT_SIZE, ALIGNMENT, 0, FREELIST>,
         private HeapAllocator {
-    using PoolAllocator = PoolAllocator<ELEMENT_SIZE, ALIGNMENT, 0, FREELIST>;
+    using Self = PoolAllocator<ELEMENT_SIZE, ALIGNMENT, 0, FREELIST>;
+
     void* mBegin;
     void* mEnd;
 public:
