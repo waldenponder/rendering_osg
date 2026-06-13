@@ -117,11 +117,11 @@ void GridUpdateCallback::operator()(osg::Node *node, osg::NodeVisitor *nv) {
     step_ = 10 * std::max(step_, 0.01);
 
     if (cnt % 100 == 0) {
-        std::cout << "len :  " << len << "     , current:  " << _current << "    \n";
+        //std::cout << "len :  " << len << "     , current:  " << _current << "    \n";
     }
 
     if (!is_equal(step_, _current)) {
-        std::cout << "world _current: " << step_ << "   , " << _current << "\n";
+       // std::cout << "world _current: " << step_ << "   , " << _current << "\n";
         _current = step_;
         _grid1->updateGrid(gridCenter, _current, 64, COLOR1);
         _grid2->updateGrid(gridCenter, _current / 4.0, 64 * 4, COLOR2);
