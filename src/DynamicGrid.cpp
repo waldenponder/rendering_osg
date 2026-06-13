@@ -23,6 +23,9 @@ void DynamicGrid::init(const osg::Vec4 &color) {
     _colors->push_back(color);
     _geometry->setColorArray(_colors);
 
+    _geometry->setUseVertexBufferObjects(false); 
+    _geometry->setUseDisplayList(true);
+
     getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 }
 

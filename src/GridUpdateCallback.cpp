@@ -16,6 +16,22 @@ size_t cnt = 0;
 osg::Vec4 COLOR1(0.7, 0.0, 0.0, 1);
 osg::Vec4 COLOR2(0.5, 0.5, 0.5, 1);
 
+class PrintGLInfoCallback : public osg::Camera::DrawCallback {
+  public:
+    virtual void operator()(osg::RenderInfo &) const {
+        static bool once = false;
+
+        if (!once) {
+            once = true;
+
+            std::cout << "Vendor: " << glGetString(GL_VENDOR) << std::endl;
+
+            std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+
+            std::cout << "Version: " << glGetString(GL_VERSION) << std::endl;
+        }
+    }
+};
 GridUpdateCallback::GridUpdateCallback(osgViewer::Viewer *viewer, osg::Group *root)
     : _viewer(viewer) {
     _grid1 = new DynamicGrid;
@@ -27,6 +43,8 @@ GridUpdateCallback::GridUpdateCallback(osgViewer::Viewer *viewer, osg::Group *ro
 
     root->addChild(_grid1);
     root->addChild(_grid2);
+
+    _viewer->getCamera()->setFinalDrawCallback(new PrintGLInfoCallback);
 }
 
 // 返回大于等于val的最小2的幂
@@ -49,8 +67,7 @@ double nice_step(double val) {
     //     500,   1000,      2000,      4000,      8000,       16000,      32000,
     //     64000, 64000 * 2, 64000 * 4, 64000 * 8, 64000 * 16, 64000 * 32, 64000 * 64};
 
-    static const double steps[] = { 0.01,  0.05,      0.2,       1,
-                                   5,
+    static const double steps[] = {0.01,  0.05,      0.2,       1,         5,
                                    20,    100,       500,       2000,      8000,
                                    32000, 64000 * 2, 64000 * 8, 64000 * 64};
 
@@ -109,6 +126,18 @@ void GridUpdateCallback::operator()(osg::Node *node, osg::NodeVisitor *nv) {
         _grid1->updateGrid(gridCenter, _current, 64, COLOR1);
         _grid2->updateGrid(gridCenter, _current / 4.0, 64 * 4, COLOR2);
     }
+
+    //auto val1 = glGetString(GL_VENDOR);
+    //if (val1)
+    //    std::cout << val1 << std::endl;
+
+    //auto val2 = glGetString(GL_RENDERER);
+    //if (val2)
+    //    std::cout << val2 << std::endl;
+
+    //auto val3 = glGetString(GL_VERSION);
+    //if (val3)
+    //    std::cout << val3 << std::endl;
 
     traverse(node, nv);
 }

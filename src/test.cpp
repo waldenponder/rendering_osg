@@ -12,40 +12,33 @@
 #include "BatchSystem.h"
 #include "DynamicGrid .h"
 #include "GridUpdateCallback.h"
-#include "test_ecs2.h"
-#include "manager/TransformManager.h"
-#include "manager/MeshManager.h"
-#include "test_jobsystem.h"
 #include "ThreeDimManipulator.h"
+#include "manager/MeshManager.h"
+#include "manager/TransformManager.h"
+#include "test_ecs2.h"
+#include "test_jobsystem.h"
 
 #define WINDOWSIZE 8
 
-
 //------------------------------------------------------------------------------------------
-class MVPCallback : public osg::Uniform::Callback
-{
-public:
-    MVPCallback(osg::Camera* camera) : mCamera(camera)
-    {
-    }
+class MVPCallback : public osg::Uniform::Callback {
+  public:
+    MVPCallback(osg::Camera *camera) : mCamera(camera) {}
 
-    virtual void operator()(osg::Uniform* uniform, osg::NodeVisitor* nv)
-    {
+    virtual void operator()(osg::Uniform *uniform, osg::NodeVisitor *nv) {
         osg::Matrix modelView = mCamera->getViewMatrix();
         osg::Matrix projectM = mCamera->getProjectionMatrix();
         uniform->set(modelView * projectM);
     }
 
-private:
-    osg::Camera* mCamera;
+  private:
+    osg::Camera *mCamera;
 };
 
 // https://blog.csdn.net/qq_16123279/article/details/82463266
 
-osg::Geometry* createLine2(const std::vector<osg::Vec3d>& allPTs,
-                           const std::vector<osg::Vec3d>& colors,
-                           osg::Camera* camera)
-{
+osg::Geometry *createLine2(const std::vector<osg::Vec3d> &allPTs,
+                           const std::vector<osg::Vec3d> &colors, osg::Camera *camera) {
     cout << "osg::getGLVersionNumber" << osg::getGLVersionNumber() << endl;
 
     // 传递给shader
@@ -57,8 +50,7 @@ osg::Geometry* createLine2(const std::vector<osg::Vec3d>& allPTs,
 
     osg::ref_ptr<osg::Vec3Array> a_pos = new osg::Vec3Array;
 
-    for (int i = 0; i < allPTs.size(); i++)
-    {
+    for (int i = 0; i < allPTs.size(); i++) {
         a_pos->push_back(allPTs[i]);
     }
 
@@ -66,11 +58,10 @@ osg::Geometry* createLine2(const std::vector<osg::Vec3d>& allPTs,
     osg::ref_ptr<osg::DrawElementsUInt> indices =
         new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES);
 
-    //std::default_random_engine eng(time(NULL));
-    //std::uniform_real_distribution<float> rand(.3, 1.);
+    // std::default_random_engine eng(time(NULL));
+    // std::uniform_real_distribution<float> rand(.3, 1.);
 
-    for (unsigned int i = 0; i < allPTs.size(); i++)
-    {
+    for (unsigned int i = 0; i < allPTs.size(); i++) {
         indices->push_back(i);
         a_color->push_back(colors[i]);
     }
@@ -79,23 +70,22 @@ osg::Geometry* createLine2(const std::vector<osg::Vec3d>& allPTs,
     pGeometry->addPrimitiveSet(indices.get());
     pGeometry->setUseVertexBufferObjects(true); // 不启用VBO的话，图元重启没效果
 
-    osg::StateSet* ss = pGeometry->getOrCreateStateSet();
+    osg::StateSet *ss = pGeometry->getOrCreateStateSet();
     ss->setAttributeAndModes(new osg::LineWidth(2), osg::StateAttribute::ON);
-    ss->setMode(GL_LIGHTING,
-                osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED);
+    ss->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED);
 
     //------------------------osg::Program-----------------------------
-    osg::Program* program = new osg::Program;
+    osg::Program *program = new osg::Program;
     program->setName("LINESTRIPE");
-    program->addShader(osgDB::readShaderFile(
-        osg::Shader::VERTEX, shader_dir() + "/line_stripe2.vert"));
-    program->addShader(osgDB::readShaderFile(
-        osg::Shader::FRAGMENT, shader_dir() + "/line_stripe2.frag"));
+    program->addShader(
+        osgDB::readShaderFile(osg::Shader::VERTEX, shader_dir() + "/line_stripe2.vert"));
+    program->addShader(osgDB::readShaderFile(osg::Shader::FRAGMENT,
+                                             shader_dir() + "/line_stripe2.frag"));
 
     ss->setAttributeAndModes(program, osg::StateAttribute::ON);
 
     //-----------attribute  addBindAttribLocation
-    //pGeometry->setVertexArray(a_pos);
+    // pGeometry->setVertexArray(a_pos);
     pGeometry->setVertexAttribArray(0, a_pos, osg::Array::BIND_PER_VERTEX);
     pGeometry->setVertexAttribBinding(0, osg::Geometry::BIND_PER_VERTEX);
     program->addBindAttribLocation("a_pos", 0);
@@ -105,15 +95,14 @@ osg::Geometry* createLine2(const std::vector<osg::Vec3d>& allPTs,
     program->addBindAttribLocation("a_color", 1);
 
     //-----------------------------------------------uniform
-    osg::Uniform* u_MVP(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "u_MVP"));
+    osg::Uniform *u_MVP(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "u_MVP"));
     u_MVP->setUpdateCallback(new MVPCallback(camera));
     ss->addUniform(u_MVP);
 
     return pGeometry.release();
 }
 
-osg::Node* create_lines(osgViewer::Viewer& view)
-{
+osg::Node *create_lines(osgViewer::Viewer &view) {
     osg::ref_ptr<osg::Geode> geode = new osg::Geode;
     vector<osg::Vec3d> PTs, COLORs;
 
@@ -142,21 +131,18 @@ osg::Node* create_lines(osgViewer::Viewer& view)
     PTs.push_back(osg::Vec3(50, 100, 0));
     PTs.push_back(osg::Vec3(0, 0, 0));
 
-    osg::Geometry* n = createLine2(PTs, colors, view.getCamera());
+    osg::Geometry *n = createLine2(PTs, colors, view.getCamera());
     n->setName("LINE1");
     geode->addDrawable(n);
 
-    osg::Uniform* uniform = new osg::Uniform(osg::Uniform::FLOAT_VEC4, "u_color");
+    osg::Uniform *uniform = new osg::Uniform(osg::Uniform::FLOAT_VEC4, "u_color");
     uniform->set(osg::Vec4(1, 1, 0, 1.));
     n->getOrCreateStateSet()->addUniform(uniform);
-
 
     return geode.release();
 }
 
-
-float random_float_modern(float min, float max)
-{
+float random_float_modern(float min, float max) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dist(min, max);
@@ -164,20 +150,18 @@ float random_float_modern(float min, float max)
     return dist(gen);
 }
 
-void test_ecs(osg::Group* root)
-{
+void test_ecs(osg::Group *root) {
     float sz = 500;
 
     std::vector<Entity> entities;
     auto t1 = clock();
 
-    for (int i = 0; i < 20000; i++)
-    {
+    for (int i = 0; i < 20000; i++) {
         Entity e1 = entity_manager.create();
         entities.push_back(e1);
 
-        //MeshData data1 = get_mesh_func(e1);
-        //mesh_manager.set_mesh(e1, data1);
+        // MeshData data1 = get_mesh_func(e1);
+        // mesh_manager.set_mesh(e1, data1);
 
         float r1 = random_float_modern(-sz, sz);
         float r2 = random_float_modern(-sz, sz);
@@ -198,15 +182,13 @@ void test_ecs(osg::Group* root)
 #endif
     }
 
-
     auto t2 = clock();
     cout << "aaaa: " << (t2 - t1) << "\n";
 
     {
         auto aa = clock();
 
-        for (auto e : entities)
-        {
+        for (auto e : entities) {
             MeshData data1 = get_mesh_func(e);
             mesh_manager.set_mesh(e, data1);
         }
@@ -230,9 +212,7 @@ void test_ecs(osg::Group* root)
     auto t5 = clock();
     cout << "ddd: " << (t5 - t4) << "\n";
 
-
-    for (auto& data : datas)
-    {
+    for (auto &data : datas) {
         osg::ref_ptr<osg::Geode> geode = new osg::Geode;
         osg::ref_ptr<osg::Geometry> geometry = createGeometry(data);
         geode->addDrawable(geometry);
@@ -242,24 +222,26 @@ void test_ecs(osg::Group* root)
     cout << "eee: " << (t6 - t5) << "\n";
 }
 
-osg::Node* create_instance();
+osg::Node *create_instance();
 
-int main()
+int main() 
 {
+    osg::setNotifyLevel(osg::DEBUG_INFO);
+
     osgViewer::Viewer viewer;
-    osg::Group* root = new osg::Group;
+    osg::Group *root = new osg::Group;
 
     root->setUpdateCallback(new GridUpdateCallback(&viewer, root));
 
     viewer.addEventHandler(new osgViewer::StatsHandler);
     viewer.setSceneData(root);
     viewer.setUpViewInWindow(100, 100, 1280, 800);
-    auto* camera = viewer.getCamera();
-    camera->setSmallFeatureCullingPixelSize(2.0f); //小对象剔除
+    auto *camera = viewer.getCamera();
+    camera->setSmallFeatureCullingPixelSize(2.0f); // 小对象剔除
 
     add_event_handler(viewer);
 
-   // view.setCameraManipulator(new ThreeDimManipulator(&view));
+    // view.setCameraManipulator(new ThreeDimManipulator(&view));
     // view.addEventHandler(new PickHandler);
     osg::setNotifyLevel(osg::NotifySeverity::NOTICE);
     viewer.realize();
