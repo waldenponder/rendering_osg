@@ -3,9 +3,9 @@ if(TARGET OSG::OSG)
     return()
 endif()
 
-set(OSG_ROOT "${CMAKE_SOURCE_DIR}/osg3.6.5")
+set(OSG_ROOT "F:/OpenSceneGraph")
 set(OSG_INCLUDE_DIR "${OSG_ROOT}/include")
-set(OSG_LIB_DIR "${OSG_ROOT}/lib")
+set(OSG_LIB_DIR "${OSG_ROOT}/build/lib")
 
 message(STATUS "root dir　　CMAKE_SOURCE_DIR 　${CMAKE_SOURCE_DIR}" )
 message(STATUS "current dir　CMAKE_CURRENT_LIST_DIR 　${CMAKE_CURRENT_LIST_DIR}" )
