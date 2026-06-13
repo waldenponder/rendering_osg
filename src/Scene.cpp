@@ -20,7 +20,7 @@ Scene::Scene()
     render_info_manager.set_entity_manager(&entity_manager);
 }
 
-Scene& Scene::instance()
+Scene& Scene::instance() 
 {
     static Scene s;
     return s;
