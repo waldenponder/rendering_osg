@@ -44,7 +44,16 @@ using namespace std;
 #include "event_handler.inc"
 
 #include <stdio.h>
-#include <io.h>
+#ifdef _WIN32
+#include <io.h> // 仅Windows引入
+#endif
+
+// Linux 对应功能需要的标准头文件（按需补充）
+#ifdef __linux__
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 #include <osg/MatrixTransform>
 
 inline string shader_dir()
