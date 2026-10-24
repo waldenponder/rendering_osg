@@ -4,9 +4,20 @@ if(TARGET OSG::OSG)
 endif()
 
 if (WIN32)
-set(OSG_ROOT "F:/OpenSceneGraph")
+set(OSG_ROOT "F:/OpenSceneGraph" CACHE PATH "OpenSceneGraph source or SDK root")
+set(OSG_BUILD_DIR "${OSG_ROOT}/build" CACHE PATH "OpenSceneGraph build directory")
+set(OSG_RELEASE_BUILD_DIR "${CMAKE_SOURCE_DIR}/out/osg-release" CACHE PATH "OpenSceneGraph Release build directory")
 set(OSG_INCLUDE_DIR "${OSG_ROOT}/include")
-set(OSG_LIB_DIR "${OSG_ROOT}/build/lib")
+set(OSG_LIB_DIR "${OSG_BUILD_DIR}/lib")
+
+# The OCCT example uses the existing Release SDK in every IDE configuration.
+# Keep this interface separate from the playground's Debug OSG dependencies.
+add_library(OSG::Release INTERFACE IMPORTED)
+target_include_directories(OSG::Release INTERFACE
+    "${OSG_RELEASE_BUILD_DIR}/include" "${OSG_INCLUDE_DIR}")
+foreach(component OpenThreads osg osgUtil osgDB osgViewer osgGA)
+    target_link_libraries(OSG::Release INTERFACE "${OSG_RELEASE_BUILD_DIR}/lib/${component}.lib")
+endforeach()
 
 message(STATUS "root dir　　CMAKE_SOURCE_DIR 　${CMAKE_SOURCE_DIR}" )
 message(STATUS "current dir　CMAKE_CURRENT_LIST_DIR 　${CMAKE_CURRENT_LIST_DIR}" )
@@ -14,6 +25,8 @@ message(STATUS "current dir　CMAKE_CURRENT_LIST_DIR 　${CMAKE_CURRENT_LIST_DIR
 add_library(OSG::OSG INTERFACE IMPORTED)
 
 target_include_directories(OSG::OSG INTERFACE
+    "$<$<CONFIG:Debug>:${OSG_BUILD_DIR}/include>"
+    "$<$<NOT:$<CONFIG:Debug>>:${OSG_RELEASE_BUILD_DIR}/include>"
     ${OSG_INCLUDE_DIR}
 )
 target_link_libraries(OSG::OSG INTERFACE
@@ -24,12 +37,7 @@ target_link_libraries(OSG::OSG INTERFACE
     debug ${OSG_LIB_DIR}/osgViewerd.lib
     debug ${OSG_LIB_DIR}/osgGAd.lib
 
-    optimized ${OSG_LIB_DIR}/OpenThreads.lib
-    optimized ${OSG_LIB_DIR}/osg.lib
-    optimized ${OSG_LIB_DIR}/osgUtil.lib
-    optimized ${OSG_LIB_DIR}/osgDB.lib
-    optimized ${OSG_LIB_DIR}/osgViewer.lib
-    optimized ${OSG_LIB_DIR}/osgGA.lib
+    optimized OSG::Release
 )
 
 else()

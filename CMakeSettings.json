@@ -1,15 +1,39 @@
-﻿{
+{
   "configurations": [
     {
       "name": "x64-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "type": "BOOL",
+          "name": "BUILD_LEGACY_DEMO",
+          "value": "ON"
+        },
+        {
+          "type": "BOOL",
+          "name": "BUILD_OCCT_DEMO",
+          "value": "ON"
+        },
+        {
+          "type": "PATH",
+          "name": "OSG_RELEASE_BUILD_DIR",
+          "value": "${projectDir}/out/osg-release"
+        },
+        {
+          "type": "STRING",
+          "name": "CMAKE_TRY_COMPILE_CONFIGURATION",
+          "value": "Release"
+        }
+      ]
     },
     {
       "name": "x64-Release",
@@ -20,8 +44,31 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": []
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "variables": [
+        {
+          "type": "BOOL",
+          "name": "BUILD_LEGACY_DEMO",
+          "value": "ON"
+        },
+        {
+          "type": "BOOL",
+          "name": "BUILD_OCCT_DEMO",
+          "value": "ON"
+        },
+        {
+          "type": "PATH",
+          "name": "OSG_RELEASE_BUILD_DIR",
+          "value": "${projectDir}/out/osg-release"
+        },
+        {
+          "type": "STRING",
+          "name": "CMAKE_TRY_COMPILE_CONFIGURATION",
+          "value": "Release"
+        }
+      ]
     }
   ]
 }

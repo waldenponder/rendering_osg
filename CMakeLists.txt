@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.18)
 project(rendering_osg)
 
 include(cmake/osg.cmake)
@@ -18,6 +18,15 @@ message(STATUS "Include directories: ${INCLUDE_DIRS}")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(BUILD_LEGACY_DEMO "Build the existing rendering playground" ON)
+option(BUILD_OCCT_DEMO "Build the OCCT to OSG primitives viewer" ON)
+
+if(BUILD_OCCT_DEMO)
+    add_subdirectory(examples/occt_primitives)
+endif()
+
+if(BUILD_LEGACY_DEMO)
 
 file(GLOB_RECURSE HEADER_FILES ${SOURCE_DIR}/*.h ${SOURCE_DIR}/*.hpp)
 file(GLOB_RECURSE SOURCE_FILES ${SOURCE_DIR}/*.cpp ${SOURCE_DIR}/*.cc ${SOURCE_DIR}/*.c)
@@ -44,4 +53,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${CMAKE_DL_LIBS}
 	${OPENGL_LIBRARIES}   # 添加这一行，链接 OpenGL
 )
+endif()
 endif()
