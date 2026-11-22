@@ -1,4 +1,9 @@
+#ifndef STEP_MESH_WEIGHTED_JOBS
+#define STEP_MESH_WEIGHTED_JOBS 1
+#endif
+#if STEP_MESH_WEIGHTED_JOBS
 #include <BRepAdaptor_Surface.hxx>
+#endif
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRepTools.hxx>
 #include <BRep_Builder.hxx>
@@ -70,7 +75,9 @@ private:
 
 struct Job {
     TopoDS_Shape shape;
+#if STEP_MESH_WEIGHTED_JOBS
     Count weight = 0, faces = 0;
+#endif
 };
 
 // Descend through assembly containers. Keep the first placed occurrence of
@@ -88,6 +95,7 @@ void collectLeaves(const TopoDS_Shape& shape, std::unordered_set<Key>& seen,
 
 // Relative scheduling hints, in arbitrary units. No area integration or
 // bounding-box computation in the planner. Each unique trimmed edge adds cost.
+#if STEP_MESH_WEIGHTED_JOBS
 Count faceWeight(const TopoDS_Face& face) {
     if (!BRep_Tool::IsGeometric(face)) return 1;
     switch (BRepAdaptor_Surface(face, false).GetType()) {
@@ -98,6 +106,7 @@ Count faceWeight(const TopoDS_Face& face) {
         default: return 8;
     }
 }
+#endif
 
 // Pointer identity deliberately ignores location/orientation. Even different
 // solids can own the same writable edge. Visit each topology subtree once.
@@ -108,12 +117,14 @@ void claimTopology(const TopoDS_Shape& shape, size_t owner, Job& leaf,
         groups.join(owner, it->second);
         return;
     }
+#if STEP_MESH_WEIGHTED_JOBS
     if (shape.ShapeType() == TopAbs_FACE) {
         ++leaf.faces;
         leaf.weight += faceWeight(TopoDS::Face(shape));
     } else if (shape.ShapeType() == TopAbs_EDGE) {
         ++leaf.weight;
     }
+#endif
     for (TopoDS_Iterator child(shape, false, false); child.More(); child.Next())
         claimTopology(child.Value(), owner, leaf, owners, groups);
 }
@@ -143,14 +154,18 @@ std::vector<Job> planJobs(const TopoDS_Shape& assembly, size_t& leafCount) {
         Job job;
         for (auto i : ids) {
             builder.Add(compound, leaves[i].shape);
+#if STEP_MESH_WEIGHTED_JOBS
             job.weight += leaves[i].weight;
             job.faces += leaves[i].faces;
+#endif
         }
         job.shape = compound;
         jobs.push_back(job);
     }
+#if STEP_MESH_WEIGHTED_JOBS
     std::stable_sort(jobs.begin(), jobs.end(),
                      [](const Job& a, const Job& b) { return a.weight > b.weight; });
+#endif
     return jobs;
 }
 
@@ -182,17 +197,29 @@ size_t runJobs(const std::vector<Job>& jobs, std::vector<Result>& results,
             results[i] = mesh(jobs[i].shape, linear, angle, false);
         return 0;
     }
+    oneapi::tbb::task_arena arena(threads);
+    if (mode == Mode::whole) {
+        arena.execute([&] { results[0] = mesh(jobs[0].shape, linear, angle, true); });
+        return 1;
+    }
+#if !STEP_MESH_WEIGHTED_JOBS
+    arena.execute([&] {
+        oneapi::tbb::parallel_for(size_t{0}, jobs.size(), [&](size_t i) {
+            results[i] = mesh(jobs[i].shape, linear, angle, false);
+        });
+    });
+    return 0;
+#else
     Count total = 0;
     for (const Job& job : jobs) total += job.weight;
-    oneapi::tbb::task_arena arena(threads);
     size_t innerJobs = 0;
     // A job well above one worker's average load can dominate the tail.
     // Run those one at a time so the native OCCT pool never overlaps outer TBB.
     std::vector<size_t> outer;
     arena.execute([&] {
         for (size_t i = 0; i < jobs.size(); ++i) {
-            if (mode == Mode::whole || (mode == Mode::hybrid && jobs[i].faces > 1 &&
-                jobs[i].weight > 1.5 * static_cast<double>(total) / threads)) {
+            if (mode == Mode::hybrid && jobs[i].faces > 1 &&
+                jobs[i].weight > 1.5 * static_cast<double>(total) / threads) {
                 results[i] = mesh(jobs[i].shape, linear, angle, true);
                 ++innerJobs;
             } else {
@@ -214,6 +241,7 @@ size_t runJobs(const std::vector<Job>& jobs, std::vector<Result>& results,
         });
     });
     return innerJobs;
+#endif
 }
 
 struct Counts {
@@ -311,6 +339,7 @@ int benchmark(const TopoDS_Shape& assembly, const Trial& t, double linear, doubl
         longest = std::max(longest, r.elapsed);
     }
     std::cout << "mode=" << t.name << " threads=" << threads
+              << " weighted_jobs=" << STEP_MESH_WEIGHTED_JOBS
               << " occt_backend=" << (OSD_Parallel::ToUseOcctThreads() ? "native" : "tbb")
               << " linear_mm=" << linear << " angle_rad=" << angle << '\n'
               << "face_occurrences=" << counts.occurrences << " unique_faces=" << counts.uniqueFaces

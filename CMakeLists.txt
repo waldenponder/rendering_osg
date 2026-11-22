@@ -25,6 +25,7 @@ if(BUILD_OCCT_DEMO)
         include(cmake/osg.cmake)
     endif()
     add_subdirectory(examples/occt_primitives)
+    add_subdirectory(examples/step_mesh_bench)
 endif()
 
 if(BUILD_LEGACY_DEMO)
