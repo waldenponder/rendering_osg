@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 project(rendering_osg)
 
-include(cmake/osg.cmake)
-
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # 直接指定要包含的目录
@@ -23,10 +21,14 @@ option(BUILD_LEGACY_DEMO "Build the existing rendering playground" ON)
 option(BUILD_OCCT_DEMO "Build the OCCT to OSG primitives viewer" ON)
 
 if(BUILD_OCCT_DEMO)
+    if(WIN32)
+        include(cmake/osg.cmake)
+    endif()
     add_subdirectory(examples/occt_primitives)
 endif()
 
 if(BUILD_LEGACY_DEMO)
+include(cmake/osg.cmake)
 
 file(GLOB_RECURSE HEADER_FILES ${SOURCE_DIR}/*.h ${SOURCE_DIR}/*.hpp)
 file(GLOB_RECURSE SOURCE_FILES ${SOURCE_DIR}/*.cpp ${SOURCE_DIR}/*.cc ${SOURCE_DIR}/*.c)

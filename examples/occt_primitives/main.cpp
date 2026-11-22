@@ -1,3 +1,5 @@
+#include "ViewerWindow.h"
+
 #include <BRepCheck_Analyzer.hxx>
 #include <BRepLib_ToolTriangulatedShape.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
@@ -16,9 +18,6 @@
 #include <osg/Group>
 #include <osg/LightModel>
 #include <osg/Material>
-#include <osgGA/TrackballManipulator>
-#include <osgViewer/Viewer>
-#include <osgViewer/ViewerEventHandlers>
 
 #include <iostream>
 #include <algorithm>
@@ -119,24 +118,8 @@ int main(int argc, char** argv)
         osg::ref_ptr<osg::LightModel> light = new osg::LightModel;
         light->setAmbientIntensity(osg::Vec4(0.28f, 0.28f, 0.32f, 1));
         scene->getOrCreateStateSet()->setAttributeAndModes(light, osg::StateAttribute::ON);
-        osgViewer::Viewer viewer;
-        viewer.setThreadingModel(osgViewer::Viewer::SingleThreaded);
-        viewer.setUpViewInWindow(100, 100, 1280, 800);
-        viewer.getCamera()->setClearColor(osg::Vec4(0.09f, 0.115f, 0.16f, 1));
-        viewer.setSceneData(scene);
-        osg::ref_ptr<osgGA::TrackballManipulator> trackball = new osgGA::TrackballManipulator;
-        trackball->setHomePosition(osg::Vec3d(9, -23, 14), osg::Vec3d(0, 0, 1), osg::Vec3d(0, 0, 1));
-        viewer.setCameraManipulator(trackball);
-        viewer.addEventHandler(new osgViewer::StatsHandler);
-        viewer.realize();
-        if (!viewer.isRealized()) throw std::runtime_error("OSG could not create an OpenGL window");
-        osgViewer::ViewerBase::Windows windows;
-        viewer.getWindows(windows);
-        for (auto* window : windows)
-            window->setWindowName("OCCT + OpenSceneGraph | Box - Cylinder - Cone");
-        viewer.home();
         std::cout << "Left drag: rotate | Middle drag: pan | Wheel: zoom | Space: reset | Esc: exit\n";
-        return viewer.run();
+        return runViewer(argc, argv, *scene);
     }
     catch (const Standard_Failure& error)
     {
